@@ -17,60 +17,95 @@ import java.util.Map;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.context.Context;
 
+import com.receitas.app.controller.RecipeController;
+import com.receitas.app.service.RecipeService;
+
 import static io.javalin.apibuilder.ApiBuilder.get;
+import static io.javalin.apibuilder.ApiBuilder.post;
+import static io.javalin.apibuilder.ApiBuilder.delete;
+import static io.javalin.apibuilder.ApiBuilder.put;
 
 public class Server {
 
+
+
   public static void main(String[] args) {
-        Javalin app = Javalin.create(config -> {
-            config.addStaticFiles("/static");
 
-			config.requestLogger((ctx, ms) -> {
-			  System.out.println(ctx.method() + " " + ctx.fullUrl());
-			  System.out.println(ms + " ms");
-			});
+	  RecipeController recipeController = new RecipeController(RecipeService.getInstance());
 
-            JavalinRenderer.register(JavalinThymeleaf.INSTANCE);
+	Javalin app = Javalin.create(config -> {
+	  // add static file folder
+	  config.addStaticFiles("/static");
 
-			// set the default template engine as HTML, using 'public/thymeleaf/' as the source folder for these files
-            JavalinThymeleaf.configure(
-				ThymeleafConfig.templateEngine( ThymeleafConfig.templateResolver( TemplateMode.HTML, "/thymeleaf/", ".html"))
-            );
-        }).start(7777);
+	  // Add live request logging
+	  config.requestLogger((ctx, ms) -> {
+		System.out.println(ctx.method() + " " + ctx.fullUrl());
+		System.out.println(ms + " ms");
+	  });
 
-        app.routes(() -> {
-            get("/", TEST);
-        });
+	  // set the thymeleaf as the rendering engine 
+	  JavalinRenderer.register(JavalinThymeleaf.INSTANCE);
+	  JavalinThymeleaf.configure(
+		  // set the default template engine as HTML, using 'public/thymeleaf-templates/' as the source folder for .html files
+		  ThymeleafConfig.templateEngine( ThymeleafConfig.templateResolver( TemplateMode.HTML, "/thymeleaf-templates/", ".html"))
+		  );
+
+	}).start( getPort() );
+
+	app.routes(() -> {
+
+		get("/", rootPageHandler); // should redirect to /home
+		get("/recipes", recipeController::getRecipes);
+
+        delete("/recipes/:id", recipeController::deleteRecipe);
+
+		/*
+		// <search for recipe>
+        get("/recipes/search?q=query", recipeController::getRecipeById);
+        get("/recipes?ingredient=i", recipeController::getRecipeById);
+		get("/recipes?category=c", recipeController::getRecipeById);
+        get("/recipes?name=n", recipeController::getRecipeById);
+		// </search for recipe>
+		 *
+		*/
+
+        put("/recipes", recipeController::addRecipeJSON);
+        // put("/recipes/:id/ratings", recipeController::addRecipeJSON);
 
 
-		System.out.println("The server is up \\o/");
+
+	});
+
+
+	System.out.printf("The server is up on port %s \\o/\n", app.port());
   }
 
-  private static final Handler TEST = (ctx) -> {
+
+  private static final Handler rootPageHandler = (ctx) -> {
 	Map<String, Object> model = new HashMap<>();
 	model.put("hello", "Hello, World.");
-	ctx.render("test.html", model);
+	ctx.render("index.html", model);
   };
 
-    private static final Handler JS = (ctx) -> {
-        String jsFileName = ctx.pathParam("jsFile");
-        Context thymeleafCtx = new Context();
-        thymeleafCtx.setVariable("jsTest", "This string is from a JS file");
-        ResourceResponse resourceResponse = renderedFileAsStream(jsFileName, thymeleafCtx, TemplateMode.JAVASCRIPT);
-        sendResult(resourceResponse, "application/javascript", ctx);
-    };
+  private static final Handler JS = (ctx) -> {
+	String jsFileName = ctx.pathParam("jsFile");
+	Context thymeleafCtx = new Context();
+	thymeleafCtx.setVariable("jsTest", "This string is from a JS file");
+	ResourceResponse resourceResponse = renderedFileAsStream(jsFileName, thymeleafCtx, TemplateMode.JAVASCRIPT);
+	sendResult(resourceResponse, "application/javascript", ctx);
+  };
 
-	private static final Handler CSS = (ctx) -> {
-	  String cssFileName = ctx.pathParam("cssFile");
-	  Context thymeleafCtx = new Context();
-	  thymeleafCtx.setVariable("backgroundColor", "goldenrod");
-	  ResourceResponse resourceResponse = renderedFileAsStream(cssFileName, thymeleafCtx, TemplateMode.CSS);
-	  sendResult(resourceResponse, "text/css", ctx);
-	};
+  private static final Handler CSS = (ctx) -> {
+	String cssFileName = ctx.pathParam("cssFile");
+	Context thymeleafCtx = new Context();
+	thymeleafCtx.setVariable("backgroundColor", "goldenrod");
+	ResourceResponse resourceResponse = renderedFileAsStream(cssFileName, thymeleafCtx, TemplateMode.CSS);
+	sendResult(resourceResponse, "text/css", ctx);
+  };
 
   // read system variable PORT if defined otherwise defaults to 7777
   private static int getPort(){
-	final String environmentDefinedPort = System.getenv("PORT");
+	final String environmentDefinedPort = System.getenv("RECIPES_SERVER_PORT");
 	return environmentDefinedPort != null ? Integer.parseInt(environmentDefinedPort) : 7777;
   }
 
@@ -90,23 +125,23 @@ public class Server {
 
 
 class ResourceResponse {
-    private final int httpStatus;
-    private final InputStream response;
-    
-    static final String FOUROHFOUR = "Not found.";
-    static final String FIVEHUNDRED = "Internal server error.";
-    
-    ResourceResponse(int httpStatus, InputStream response) {
-        this.httpStatus = httpStatus;
-        this.response = response;
-    }
+  private final int httpStatus;
+  private final InputStream response;
 
-    public int getHttpStatus() {
-        return httpStatus;
-    }
+  static final String FOUROHFOUR = "Not found.";
+  static final String FIVEHUNDRED = "Internal server error.";
 
-    public InputStream getResponse() {
-        return response;
-    }
-    
+  ResourceResponse(int httpStatus, InputStream response) {
+	this.httpStatus = httpStatus;
+	this.response = response;
+  }
+
+  public int getHttpStatus() {
+	return httpStatus;
+  }
+
+  public InputStream getResponse() {
+	return response;
+  }
+
 }

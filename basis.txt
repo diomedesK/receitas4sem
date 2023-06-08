@@ -1,0 +1,84 @@
+// o campo de busca deve ser presente em todas os subdominios
+// uris que nao possuem nenhum campo HTTP agregado devem retornar um 404
+
+/home/ (GET)
+  // a home deve conter os pratos mais populares (em torno de 20) como um painel
+  // a home deve conter uma barra para a navegação para as categorias
+
+/busca/ 
+  |		?q={texto} (GET) // para fazer a busca por ingredientes, implementar um filtro especial para itens contendo 'ingrediente:{nome_ingrediente}'
+
+/categoria/ 
+  |
+  |__ /	(GET) // retorna as categorias possíveis
+  |__ /categorias/{nome_categoria} (GET)
+
+/cadastro/
+  |
+  |__ (GET) // retorna uma tela para fazer o cadastro dos usuários
+  |
+  |__ (POST) // cadastra o usuário efetivamente
+
+/acesso
+  |
+  |__ / (GET) // retorna a pagina de acesso
+  |
+  |__ / (POST) // tenta fazer o acesso com as credenciais fornecidas
+
+/sair 
+  |
+  |__ / (GET) // para sair da conta
+
+/perfil/{id}
+  | 
+  |__ /favoritos (GET) // retorna as receitas que o usuário favoritou
+  |__ /favoritos (PUT) // adiciona uma receita aos favoritos
+  |__ /favoritos (DELETE) // remove uma receita dos favoritos
+
+
+/receitas
+  |
+  |__ /receitas/{id_receita} (GET) // retorna a receita em si
+  |
+  |__ /receitas/ (PUT)  // adiciona nova receita  
+  |   |
+  |	  |_ query parameters:
+  |						?categoria={x}		//receitas em x categoria
+  |						?ingrediente={x}	//receitas com x ingredientes
+  |						?nome={x}			//receitas com x nome
+  |						?id={x}				//receita com x id
+  |
+  |__ /receitas/{id_receita} (DELETE)  // apaga uma receita  (nao implementado ainda nos diagramas)
+  |
+  |__ /receitas/avaliacoes (POST)  // adiciona nova avaliacao
+
+- - - - - - 
+class Receita
+  id: 6 chars
+  titulo: texto
+  descricao: texto
+  autor: id
+
+  tempo de preparo: duracao em minutos
+  metodo de cozimento : texto
+  categoria: texto
+  ingredientes[ingrediente:texto]
+  instrucoes[ <passo:num, instrucao:texto> ]
+  avaliacoes[ <id_usuario:id, nota: int entre [0, 5] > ]
+  acesso recentes: fila com 7 posições possiveis; todo dia um numero (int) sai da fila (acessos do dia mais antigo) e os acessos do dia mais recente (hoje) entram
+
+  obterAvaliacaoMedia() // gera uma avaliacao baseado no atributo avaliacoes (ou entao procure um metodo mais efetivo de fazer isso)
+  adicionarAvaliacao(id_usuario, nota) // adiciona a avaliacao de um usuário
+  removerAvaliacao(id_usuario) // remove a avaliacao de um usuário 
+
+
+class Usuario:
+  id: 6 chars
+  nome: texto
+  favoritos[<Receita>]
+
+  adicionarFavorito( Receita r )
+  removerFavorito( Receita r )
+  obterFavoritos()
+
+titulo, descricao,\n categoria, metodoCozimento,\n tempoPreparo ingredientes,\n instrucoes
