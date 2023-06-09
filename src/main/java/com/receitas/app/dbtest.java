@@ -1,42 +1,36 @@
 package com.receitas.app;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-
 import com.receitas.app.model.*;
 import com.receitas.app.dao.*;
+import com.receitas.app.dummyData.*;
 
 import com.receitas.app.utils.MyLogger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 public class dbtest {
 
-	public static void main(String[] args) {
-        String recipeJSON = "{\"id\":\"123\",\"name\":\"Chocolate Cake\",\"description\":\"Delicious chocolate cake\",\"author\":\"John Doe\"}";
 
-		RecipeModel r1 = RecipeDAO.getInstance().getRecipeByID("1").get();
+	public static void main(String[] args) {
 
 		try {
 			ObjectMapper mapper = new ObjectMapper();
-
-			// System.out.println( neoJsonNode );
-			
-			// mapper.enable( SerializationFeature.WRAP_ROOT_VALUE );
 			mapper.enable( SerializationFeature.INDENT_OUTPUT );
 
-			MyLogger.info("Original:");
-			System.out.println( mapper.writeValueAsString(r1) );
+			UserModel u = new UserModel();
+			u.setName("John");
+			u.setEmail("john@mail.com");
+			u.setUsername("jonjohny");
+			u.setFavoritedRecipes( DummyRecipes.generateDummyRecipes().subList(0, 1) );
+MyLogger.info("Created:");
+			System.out.println(mapper.writeValueAsString(u));
 
-			RecipeModel generatedRecipe = mapper.readValue( mapper.writeValueAsString(r1), RecipeModel.class  );
-
-			MyLogger.info("Recreated:");
-			System.out.println( mapper.writeValueAsString(generatedRecipe) );
-
+			MyLogger.info("Deserialized:");
+			UserModel u2 = mapper.readValue( mapper.writeValueAsString(u), UserModel.class );
+			System.out.println(mapper.writeValueAsString(u2));
 			
+
 		} catch(Exception e){
 			e.printStackTrace();
 		}

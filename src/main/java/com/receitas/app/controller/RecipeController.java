@@ -29,11 +29,35 @@ public class RecipeController {
 
 	public void getRecipes( Context context ){
 		if( context.queryParamMap().containsKey("id") ){
-			getRecipeByID(context);
-		} else if ( context.queryParamMap().containsKey("authorID") ){
-			getRecipesByAuthorID(context);
-		}  else if ( context.queryParamMap().containsKey("ingredient") ){
+			getRecipeByID(
+					context,
+					context.queryParam("id")
+					);
 
+		} else if ( context.queryParamMap().containsKey("authorID") ){
+			getRecipesByAuthorID(
+					context,
+					context.queryParam("authorID")
+					);
+
+		}  else if ( context.queryParamMap().containsKey("ingredient") ){
+			getRecipesByIngredients(
+					context,
+					context.queryParam("ingredient").split(":")
+					);
+
+		} else if ( context.queryParamMap().containsKey("category")){
+			getRecipesByCategories(
+					context, 
+					context.queryParam("category").split(":")
+					);
+
+		} else if ( context.queryParamMap().containsKey("name")){
+			getRecipesByName(
+					context,
+					context.queryParam("name")
+					);
+			
 		} else {
 			getAllRecipes(context);
 		}
@@ -45,33 +69,45 @@ public class RecipeController {
         context.json(recipes);
     }
 
-    public void getRecipeByID(Context context) {
+    public void getRecipeByID(Context context, String recipeID) {
 		MyLogger.info("getByID");
-        String recipeId = context.queryParam("id");
-        Optional<RecipeModel> recipe = recipeService.getRecipeByID(recipeId);
+        Optional<RecipeModel> recipe = recipeService.getRecipeByID(recipeID);
+
         context.json(recipe.orElseThrow(() -> new NotFoundResponse("Recipe not found")));
     }
 
-    public void getRecipesByAuthorID(Context context) {
+    public void getRecipesByAuthorID(Context context, String authorID) {
 		MyLogger.info("getByAuthorID");
-        List<RecipeModel> recipes = recipeService.getRecipesByAuthorID( context.queryParam("authorID") );
+        List<RecipeModel> recipes = recipeService.getRecipesByAuthorID( authorID );
         context.json(recipes);
     }
 
-	/*
-	 * after the user dao has been established, make a method for that
-    public void getRecipesByAuthorUsername(Context context) {
-        String recipeId = context.pathParam("username");
-        List<RecipeModel> recipes = recipeService.getRecipesByAuthorID(recipeId);
+    public void getRecipesByIngredients(Context context, String... ingredients ) {
+		MyLogger.info("getByIngredients");
+        List<RecipeModel> recipes = recipeService.getRecipesByIngredients( ingredients );
         context.json(recipes);
     }
-	*/
+
+    public void getRecipesByCategories(Context context, String... categories) {
+        List<RecipeModel> recipes = recipeService.getRecipesByCategories( categories );
+        context.json(recipes);
+    }
+
+    public void getRecipesByName(Context context, String name) {
+		MyLogger.info("getByName");
+        List<RecipeModel> recipes = recipeService.getRecipesByName( context.queryParam("name") );
+        context.json(recipes);
+    }
 
     public void addRecipeJSON(Context context) {
         ServiceAPIResponse r = recipeService.addRecipeFromJSON( context.body() );
 
 		context.status( r.status ).json(r.message);
     }
+
+	public void addRecipeRating(Context context){
+		context.status(404);
+	}
 
     // public void updateRecipe(Context context) {
     //     String recipeId = context.pathParam("id");

@@ -1,16 +1,18 @@
 package com.receitas.app.dao;
-import com.receitas.app.model.UserModel;
+
+import com.receitas.app.model.*;
+
+import java.util.List;
+import java.util.Optional;
 
 public interface UserDAOInterface {
 
-	public boolean getUserFavoriteRecipes( String userID );
+	public Optional<List<RecipeModel>> getUserFavoriteRecipes( String userID );
 
-	public boolean saveRecipeAsFavorite( String recipeID, String userID );
+	public boolean saveRecipeAsFavorite( String userID, String recipeID );
 	public boolean removeRecipeFromFavorites( String recipeID, String userID );
-
 	public boolean registerNewUser( UserModel user );
 
-	public UserModel authenticateUserByUsername ( String username, String hashedPassword );
-	public UserModel authenticateUserByEmail ( String email, String hashedPassword );
-
+	public Optional<UserModel> authenticateUserByUsername ( String username, String hashedPassword );
+	public Optional<UserModel> authenticateUserByEmail ( String email, String hashedPassword );
 }

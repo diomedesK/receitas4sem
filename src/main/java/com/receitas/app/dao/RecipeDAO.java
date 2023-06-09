@@ -3,8 +3,6 @@ package com.receitas.app.dao;
 import com.receitas.app.model.RecipeModel;
 import com.receitas.app.dummyData.DummyRecipes;
 
-
-
 import java.util.Optional;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,12 +14,12 @@ import java.util.NoSuchElementException;
 // the dao uses a singleton pattern
 public class RecipeDAO implements RecipeDAOInterface {
 
-	private List<RecipeModel> dummyData;
+	private List<RecipeModel> dummyRecipes;
 
 	private static RecipeDAO instance;
 
 	private RecipeDAO(){
-		this.dummyData = DummyRecipes.generateDummyRecipes();
+		this.dummyRecipes = DummyRecipes.generateDummyRecipes();
 	}
 
 	public static RecipeDAO getInstance(){
@@ -34,40 +32,44 @@ public class RecipeDAO implements RecipeDAOInterface {
 		return instance;
 	}
 
+	public RecipeModel getRandomRecipeForTesting(){
+		return this.dummyRecipes.get(0);
+	}
+
 
 	public List<RecipeModel> getAllRecipes(){
-		return this.dummyData;
+		return this.dummyRecipes;
 	}
 
 	@Override
 	public Optional<RecipeModel> getRecipeByID( String recipeID ){
-		return this.dummyData.stream().filter( (recipe) -> recipe.getID().equals(recipeID) ).findFirst();
+		return this.dummyRecipes.stream().filter( (recipe) -> recipe.getID().equals(recipeID) ).findFirst();
 	}
 
 	@Override
 	public List<RecipeModel> getRecipesByAuthorID( String authorID ){
-		return this.dummyData.stream().filter( (recipe) -> recipe.getAuthorID().equals(authorID) ).toList();
+		return this.dummyRecipes.stream().filter( (recipe) -> recipe.getAuthorID().equals(authorID) ).toList();
 	}
 
 
 	@Override
 	public List<RecipeModel> getPopularRecipes(){
-		Collections.sort(this.dummyData, Comparator.comparing(RecipeModel::getAccessesWithinLast7Days));
-		return this.dummyData.subList(0, Math.min(this.dummyData.size(), 4));
+		Collections.sort(this.dummyRecipes, Comparator.comparing(RecipeModel::getAccessesWithinLast7Days));
+		return this.dummyRecipes.subList(0, Math.min(this.dummyRecipes.size(), 4));
 	}
 
 	@Override
 	public List<RecipeModel> getRecipesByName( String recipeName ){
-		String rgx = ".*" + recipeName + ".*";
-		return this.dummyData.stream().filter( (recipe) -> recipe.getName().matches(rgx) ).toList();
+		String rgx = ".*" + recipeName.toLowerCase() + ".*";
+
+		return this.dummyRecipes.stream().filter( (recipe) -> recipe.getName().toLowerCase().matches(rgx) ).toList();
 	}
 
 	@Override
 	public List<RecipeModel> getRecipesByIngredients( String... ingredients ){
 		List<RecipeModel> matchingRecipes = new ArrayList<>();
-
 		for (String targetIngredientName : ingredients) {
-			this.dummyData.forEach(recipe -> {
+			this.dummyRecipes.forEach(recipe -> {
 				recipe.getIngredients().forEach(recipeIngredient -> {
 					if (recipeIngredient.getName().equals(targetIngredientName)) {
 						matchingRecipes.add(recipe);
@@ -84,6 +86,17 @@ public class RecipeDAO implements RecipeDAOInterface {
 	public List<RecipeModel> getRecipesByCategories( String... categories ){
 		List<RecipeModel> matchingRecipes = new ArrayList<>();
 
+		for (String targetCategory : categories) {
+			this.dummyRecipes.forEach(recipe -> {
+				recipe.getCategories().forEach( category -> {
+					if (category.equals( targetCategory )) {
+						matchingRecipes.add(recipe);
+						return; // Continue to the next iteration of the forEach loop
+					}
+				});
+			});
+		}
+
 		return matchingRecipes;
 	}
 
@@ -92,7 +105,7 @@ public class RecipeDAO implements RecipeDAOInterface {
 		Optional<RecipeModel> tr = this.getRecipeByID(recipeID);
 
 		if(tr.isPresent()){
-			this.dummyData.remove( tr.get() );
+			this.dummyRecipes.remove( tr.get() );
 			return true;
 		} else {
 			return false;
@@ -102,7 +115,7 @@ public class RecipeDAO implements RecipeDAOInterface {
 
 	@Override
 	public boolean addRecipe( RecipeModel recipe ){
-		this.dummyData.add( recipe );
+		this.dummyRecipes.add( recipe );
 		return true;
 	}
 

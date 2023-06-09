@@ -174,7 +174,8 @@
 	  <artifactId>exec-maven-plugin</artifactId>
 	  <version>1.6.0</version>
 	  <configuration>
-		<mainClass>com.receitas.app.Server</mainClass>
+		<!-- <mainClass>com.receitas.app.Server</mainClass> -->
+		<mainClass>com.receitas.app.dbtest</mainClass>
 	  </configuration>
 
 	</plugin>

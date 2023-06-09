@@ -1,5 +1,7 @@
 package com.receitas.app.dao;
 
-public class IngredientDAO {
-	
+import com.receitas.app.dao.IngredientDAOInterface;
+
+public class IngredientDAO implements IngredientDAOInterface{
+
 }

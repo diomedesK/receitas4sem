@@ -15,7 +15,7 @@ public class RecipeServiceTest {
     private RecipeService recipeService;
 
 	private static String dummyAuthorID = "qAfxQr";
-	private static String recipeJSON = "{ \"name\": \"Chocolate Cake\", \"authorID\": \"" + dummyAuthorID + "\", \"description\": \"Delicious chocolate cake recipe\", \"prepareInMinutes\": 60, \"cookingMethod\": \"Baking\", \"categories\": [ \"Desserts\", \"Cakes\" ], \"instructions\": { \"0\": \"Preheat the oven to 350°F\", \"1\": \"Mix the dry ingredients in a bowl\", \"2\": \"Combine the wet ingredients in another bowl\" }, \"accessesWithinLast7Days\": 0, \"ratings\": { \"user1\": 5, \"user2\": 4 }, \"ingredients\": [ { \"name\": \"Flour\", \"id\": null }, { \"name\": \"Sugar\", \"id\": null } ] }";
+	private static String recipeJSON = "{ \"name\": \"Chocolate Cake\", \"authorID\": \"" + dummyAuthorID + "\", \"description\": \"Delicious chocolate cake recipe\", \"prepareInMinutes\": 60, \"cookingMethod\": \"Baking\", \"categories\": [ \"Desserts\", \"Cakes\" ], \"instructions\": { \"0\": \"Preheat the oven to 350°F\", \"1\": \"Mix the dry ingredients in a bowl\", \"2\": \"Combine the wet ingredients in another bowl\" }, \"accessesWithinLast7Days\": 0, \"ratings\": { \"user1\": 5, \"user2\": 4 }, \"ingredients\": [ { \"name\": \"Flour\" }, { \"name\": \"Sugar\" } ] }";
 
     @BeforeEach
 	public void setUp() {
@@ -42,7 +42,8 @@ public class RecipeServiceTest {
     @Test
     public void testGetRecipesByAuthorID() {
 		recipeService.addRecipeFromJSON( recipeJSON );
-		recipeService.getRecipesByAuthorID( dummyAuthorID ).stream().forEach( (recipe) -> Assertions.assertTrue( recipe.getAuthorID().equals(dummyAuthorID) ) );
+		recipeService.getRecipesByAuthorID( dummyAuthorID ).stream()
+			.forEach( (recipe) -> Assertions.assertTrue( recipe.getAuthorID().equals(dummyAuthorID) ) );
     }
 
     @Test
@@ -54,18 +55,20 @@ public class RecipeServiceTest {
 
     @Test
     public void testGetRecipesByName() {
-        String recipeName = "Chocolate Cake";
+        String recipeName = "cake";
         List<RecipeModel> recipes = recipeService.getRecipesByName(recipeName);
-        Assertions.assertNotNull(recipes);
+
+		recipes.forEach( (recipe) -> {
+			Assertions.assertTrue( recipeName.toLowerCase().contains(recipeName.toLowerCase()) );
+		});
+
         // Perform assertions based on expected results
     }
 
     @Test
     public void testGetRecipesByIngredients() {
-        String ingredient1 = "Flour";
-        String ingredient2 = "Sugar";
-        List<RecipeModel> recipes = recipeService.getRecipesByIngredients(ingredient1, ingredient2);
-
+        String[] ingredients = new String[]{"Flour", "Sugar" };
+        List<RecipeModel> recipes = recipeService.getRecipesByIngredients( ingredients );
 
         Assertions.assertNotNull(recipes);
         // Perform assertions based on expected results
@@ -76,6 +79,7 @@ public class RecipeServiceTest {
         String category1 = "Desserts";
         String category2 = "Cakes";
         List<RecipeModel> recipes = recipeService.getRecipesByCategories(category1, category2);
+
         Assertions.assertNotNull(recipes);
         // Perform assertions based on expected results
     }

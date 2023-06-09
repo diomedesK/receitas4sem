@@ -55,24 +55,10 @@ public class Server {
 	app.routes(() -> {
 
 		get("/", rootPageHandler); // should redirect to /home
-		get("/recipes", recipeController::getRecipes);
-
-        delete("/recipes/:id", recipeController::deleteRecipe);
-
-		/*
-		// <search for recipe>
-        get("/recipes/search?q=query", recipeController::getRecipeById);
-        get("/recipes?ingredient=i", recipeController::getRecipeById);
-		get("/recipes?category=c", recipeController::getRecipeById);
-        get("/recipes?name=n", recipeController::getRecipeById);
-		// </search for recipe>
-		 *
-		*/
-
-        put("/recipes", recipeController::addRecipeJSON);
-        // put("/recipes/:id/ratings", recipeController::addRecipeJSON);
-
-
+		get("/recipes", recipeController::getRecipes); // also handles to query params
+		put("/recipes", recipeController::addRecipeJSON);
+		put("/recipes/:id/ratings", recipeController::addRecipeRating);
+        delete("/recipes/popular", recipeController::deleteRecipe);
 
 	});
 
