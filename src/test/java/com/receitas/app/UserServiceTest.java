@@ -2,8 +2,9 @@ package com.receitas.app;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-
 import org.junit.jupiter.api.Test;
+
+
 import java.util.List;
 import java.util.Optional;
 import com.receitas.app.model.RecipeModel;
@@ -13,6 +14,7 @@ import com.receitas.app.service.UserService;
 
 import com.receitas.app.dao.UserDAO;
 import com.receitas.app.dao.RecipeDAO;
+import com.receitas.app.utils.MyLogger;
 
 public class UserServiceTest {
 
@@ -31,7 +33,6 @@ public class UserServiceTest {
     public void testGetUserFavoriteRecipes() {
         String userID = sampleUser.getID();
         Optional<List<RecipeModel>> recipes = userService.getUserFavoriteRecipes(userID);
-
         Assertions.assertTrue(recipes.isPresent());
         // Perform assertions based on expected results
     }
@@ -43,7 +44,6 @@ public class UserServiceTest {
         ServiceAPIResponse response = userService.saveRecipeAsFavorite(recipeID, userID);
 
         Assertions.assertEquals(200, response.status);
-        // Perform assertions based on expected results
     }
 
     @Test
@@ -53,7 +53,6 @@ public class UserServiceTest {
         ServiceAPIResponse response = userService.removeRecipeFromFavorites(recipeID, userID);
 
         Assertions.assertEquals(200, response.status);
-        // Perform assertions based on expected results
     }
 
     @Test
@@ -61,7 +60,12 @@ public class UserServiceTest {
         String userJSON = "{\"id\":\"99\", \"name\":\"John\",\"username\":\"jonjohny\",\"email\":\"john@mail.com\", \"password\":\"hashed123\", \"favoritedRecipes\":[]}";
         ServiceAPIResponse response = userService.registerNewUserFromJSON(userJSON);
         Assertions.assertEquals(201, response.status);
-        // Perform assertions based on expected results
+    }
+
+    @Test
+    public void deleteUserByID() {
+        ServiceAPIResponse response = userService.deleteUserByID("99");
+        Assertions.assertEquals(202, response.status);
     }
 
     @Test

@@ -18,6 +18,7 @@ public class UserService{
 	private UserService(){
 	}
 
+
 	public static UserService getInstance(){
 		if ( instance == null ){
 			synchronized( UserService.class ){
@@ -65,6 +66,16 @@ public class UserService{
 		} catch( Exception e) {
 			e.printStackTrace();
 			return new ServiceAPIResponse("Internal error", 500);
+		}
+	}
+
+	public ServiceAPIResponse deleteUserByID( String userID ){
+        boolean res = userDAO.deleteUserByID(userID);
+
+		if ( res == true ){
+			return new ServiceAPIResponse("User removed succesfuly", 202);
+		} else {
+			return new ServiceAPIResponse("False", 404);
 		}
 
 	}

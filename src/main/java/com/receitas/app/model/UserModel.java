@@ -9,8 +9,6 @@ import com.fasterxml.jackson.annotation.*;
 @JsonPropertyOrder({ "id", "name", "usernam", "email" })
 public class UserModel  {
 
-	private static int nextIDForDummying = 0;
-
 	private String name;
 	private String id;
 	private String username;
@@ -21,7 +19,6 @@ public class UserModel  {
 
 	public UserModel(){
 		this.favoritedRecipes = new ArrayList<>();
-		this.id = "" + nextIDForDummying++;
 	}
 
 
@@ -112,5 +109,13 @@ public class UserModel  {
 		return this.favoritedRecipes;
 	}
 
+	public String toString(){
+		return String.format(
+				"%s( ID: %s, name: %s, [...])", 
+				this.getClass().getSimpleName(),
+				this.getID(),
+				this.getName()
+				);
+	}
 
 }

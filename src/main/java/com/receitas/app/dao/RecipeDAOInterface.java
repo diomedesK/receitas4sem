@@ -8,8 +8,7 @@ public interface RecipeDAOInterface {
 
 	public Optional<RecipeModel> getRecipeByID( String recipeID );
 
-
-	public List<RecipeModel> getPopularRecipes();
+	public List<RecipeModel> getPopularRecipes( int count );
 	public List<RecipeModel> getRecipesByName( String recipeName );
 	public List<RecipeModel> getRecipesByAuthorID( String authorID );
 	public List<RecipeModel> getRecipesByIngredients( String... ingredients );
@@ -17,7 +16,11 @@ public interface RecipeDAOInterface {
 
 	public boolean deleteRecipeByID( String recipeID );
 
-	public boolean addRecipe( RecipeModel recipe );
+	public Optional<String> saveRecipe( RecipeModel recipe );
 	public boolean addRating( String recipeID, String userID, int rating );
+
+	public boolean addAccess( String recipeID );
+	public boolean clearAccessesOfRecipeFromDaysAgo( String recipeID, int olderThanDays );
+	public boolean clearAccessesOfAllRecipesFromDaysAgo( int olderThanDays );
 
 }

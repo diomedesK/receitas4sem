@@ -33,9 +33,9 @@ public class Server {
 
 	  RecipeController recipeController = new RecipeController(RecipeService.getInstance());
 
-	Javalin app = Javalin.create(config -> {
-	  // add static file folder
-	  config.addStaticFiles("/static");
+	  Javalin app = Javalin.create(config -> {
+		  // add static file folder
+		  config.addStaticFiles("/static");
 
 	  // Add live request logging
 	  config.requestLogger((ctx, ms) -> {
@@ -56,9 +56,11 @@ public class Server {
 
 		get("/", rootPageHandler); // should redirect to /home
 		get("/recipes", recipeController::getRecipes); // also handles to query params
+		get("/recipes/popular", recipeController::getPopularRecipes); // also handles to query params
 		put("/recipes", recipeController::addRecipeJSON);
 		put("/recipes/:id/ratings", recipeController::addRecipeRating);
-        delete("/recipes/popular", recipeController::deleteRecipe);
+
+        delete("/recipes/:id", recipeController::deleteRecipe);
 
 	});
 

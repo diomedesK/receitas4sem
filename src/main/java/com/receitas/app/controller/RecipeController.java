@@ -3,7 +3,6 @@ package com.receitas.app.controller;
 import io.javalin.http.Context;
 import io.javalin.http.NotFoundResponse;
 
-import java.util.Map;
 import java.util.List;
 import java.util.Optional;
 
@@ -69,9 +68,20 @@ public class RecipeController {
         context.json(recipes);
     }
 
+    public void getPopularRecipes(Context context) {
+		recipeService.clearAccessesOfAllRecipesFromDaysAgo(7);
+        List<RecipeModel> recipes = recipeService.getPopularRecipes();
+        context.json(recipes);
+    }
+
     public void getRecipeByID(Context context, String recipeID) {
 		MyLogger.info("getByID");
         Optional<RecipeModel> recipe = recipeService.getRecipeByID(recipeID);
+
+		if ( recipe.isPresent() ){
+			recipeService.clearAccessesOfRecipeFromDaysAgo(recipeID, 7);
+			recipeService.addAccess(recipeID);
+		}
 
         context.json(recipe.orElseThrow(() -> new NotFoundResponse("Recipe not found")));
     }
@@ -109,15 +119,9 @@ public class RecipeController {
 		context.status(404);
 	}
 
-    // public void updateRecipe(Context context) {
-    //     String recipeId = context.pathParam("id");
-    //     RecipeModel recipe = context.bodyAsClass(RecipeModel.class);
-    //     recipeService.updateRecipe(recipeId, recipe);
-    //     context.status(204);
-    // }
-
     public void deleteRecipe(Context context) {
         String recipeId = context.pathParam("id");
+		System.out.println(recipeId);
         ServiceAPIResponse res = recipeService.deleteRecipeByID(recipeId);
 
         context.status(res.status).json(res.message);

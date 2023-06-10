@@ -1,9 +1,7 @@
 package com.receitas.app.model;
 
 import java.util.LinkedHashSet;
-import java.util.ArrayDeque;
 import java.util.HashMap;
-import java.util.Date;
 
 import com.fasterxml.jackson.annotation.*;
 
@@ -19,8 +17,6 @@ import java.io.IOException;
 @JsonRootName("recipe")
 @JsonPropertyOrder({ "id", "name", "authorID" })
 public class RecipeModel{
-
-	private static int nextIDForDummying = 0;
 
 	private String ID;
 
@@ -38,27 +34,14 @@ public class RecipeModel{
 	private HashMap<Integer, String> instructions;
 	private HashMap<String, Integer> userRatings;
 
-	class accessesWithinLast7DaysData{
-		public int dayNumberSince1970;
-		public int accesses;
-
-		public accessesWithinLast7DaysData( int dayNumberSince1970 ){
-			this.dayNumberSince1970 = dayNumberSince1970;
-		}
-
-	}
-
-	private ArrayDeque<accessesWithinLast7DaysData> accessesWithinLast7Days;
+	private int accessesWithinLast7Days;
 
 	public RecipeModel(){
-		this.ID = "" + nextIDForDummying++;
 		this.categories = new LinkedHashSet<>();
 
 		this.userRatings = new HashMap<String, Integer>();
 		this.instructions = new HashMap<Integer, String>();
 		this.ingredientList = new LinkedHashSet<>();
-		this.accessesWithinLast7Days = new ArrayDeque<>();
-
 	}
 
 	@JsonCreator
@@ -74,7 +57,8 @@ public class RecipeModel{
 			@JsonDeserialize(using = IngredientListDeserializer.class)
 		  	LinkedHashSet<IngredientModel> ingredientList,
 
-			@JsonProperty("Instructions") HashMap<Integer, String> instructions
+			@JsonProperty("Instructions") HashMap<Integer, String> instructions,
+			@JsonProperty("accessesWithinLast7Days") int accessesWithinLast7Days
 			)
 	{
 		this();
@@ -87,7 +71,7 @@ public class RecipeModel{
 			this.cookingMethod = cookingMethod;
 			this.categories = categories;
 			this.instructions = instructions;
-			this.accessesWithinLast7Days = new ArrayDeque<>();
+			this.accessesWithinLast7Days = accessesWithinLast7Days;
 
 		} catch(Exception e){
 			e.printStackTrace();
@@ -95,7 +79,11 @@ public class RecipeModel{
 
 	}
 
-	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	public boolean setID(String id){
+		this.ID = id;
+		return true;
+	}
+
 	public String getID(){
 		return this.ID;
 	}
@@ -187,6 +175,11 @@ public class RecipeModel{
 		return true;
 	}
 
+	public boolean addInstruction( int instructionStep, String instructionDescription ){
+		this.instructions.put( instructionStep, instructionDescription );
+		return true;
+	}
+
 	public LinkedHashSet<IngredientModel> getIngredients(){
 		return this.ingredientList;
 	}
@@ -214,33 +207,14 @@ public class RecipeModel{
 
 		return (double) sum / userRatings.size();
     }
-	
-	public void addAccess() {
-        int daysSince1970 = (int) new Date().getTime() / (24 * 60 * 60 * 1000);
 
-		for ( accessesWithinLast7DaysData data : this.accessesWithinLast7Days ) {
-			if ( data.dayNumberSince1970 == daysSince1970 ) {
-				data.accesses++;
-				return;
-			}
-		}
-
-		accessesWithinLast7DaysData n = new accessesWithinLast7DaysData( daysSince1970 );
-		n.accesses++;
-		this.accessesWithinLast7Days.offer(n);
-
-		if ( this.accessesWithinLast7Days.size() > 7) {
-			this.accessesWithinLast7Days.poll();
-		}
-
+	public boolean setAccessesWithinLast7Days( int accesses ) {
+		this.accessesWithinLast7Days = accesses;
+		return true;
 	}
-
-	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	
 	public int getAccessesWithinLast7Days() {
-		int totalAccesses = this.accessesWithinLast7Days.stream()
-			.mapToInt(accessData -> accessData.accesses)
-			.sum();
-		return totalAccesses;
+		return this.accessesWithinLast7Days;
 	}
 	
 	public String toString(){

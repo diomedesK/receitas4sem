@@ -11,7 +11,9 @@ public interface UserDAOInterface {
 
 	public boolean saveRecipeAsFavorite( String userID, String recipeID );
 	public boolean removeRecipeFromFavorites( String recipeID, String userID );
+
 	public boolean registerNewUser( UserModel user );
+	public boolean deleteUserByID( String userID );
 
 	public Optional<UserModel> authenticateUserByUsername ( String username, String hashedPassword );
 	public Optional<UserModel> authenticateUserByEmail ( String email, String hashedPassword );
