@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<head>
+	<title th:text="${recipe.name}"></title>
+	<meta charset="UTF-8" />
+
+	<link th:href="@{/assets/css/bootstrap.css}" rel="stylesheet">
+	<link th:href="@{/assets/css/main.css}" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+
+</head>
+
+  <body>
+
+	<th:block th:include="./navbar.html"> </th:block>
+
+	<!-- +++++ Post +++++ -->
+	<div id="white">
+
+	    <div class="container">
+			<div class="row">
+				<div class="col-lg-8 col-lg-offset-2">
+
+					<h3 style="text-align: center" th:text="${recipe.name}"></h3>
+
+
+					<div class="center">
+
+						<div class="center" style="display: flex; gap: 10px; flex-direction: row; font-size: 12px">
+
+							<!-- <p class="no-margin" > By <ba>ghost autor</ba ></p> -->
+
+							<div class="recipe-details">
+								<p  class="no-margin">  <span> 🕛 </span> <span th:text="${recipe.prepareInMinutes}"></span> minutos </p>
+								<p  class="no-margin"> 🍳 Modo de preparo: <span th:text="${recipe.cookingMethod}"></span> </p>
+							</div>
+						</div>
+
+					</div>
+
+					<br>
+
+					<p  th:text="${recipe.description}"></p>
+
+					<h3>Ingredientes:</h3>
+					<ul>
+						<li th:each="ingredient : ${recipe.ingredients}" th:text="${ingredient.name}"></li>
+					</ul>
+
+					<h3>Instruções:</h3>
+					<ol>
+						<li th:each="instruction : ${recipe.instructions}" th:text="${instruction.value}"></li>
+					</ol>
+
+					<div th:if="${recipe.additionalInfo != null}" >
+
+						<h3> Informações adicionais: </h3>
+						<p th:text="${recipe.additionalInfo}"></p>
+
+						<hr>
+
+					</div>
+
+
+
+					<!-- <p> <bt>TAGS: <a href="/#">Wordpress</a> - <a href="#">Web Design</a></bt> </p> -->
+					<ol>
+						<li th:each="category : ${categories}" th:href="${category}"></li>
+					</ol>
+
+					<p th:each="category : ${recipe.categories}">
+					<bt> TAGS: 
+						<span th:text="${category}"> </span>
+					</bt>
+					</p>
+
+
+				</div>
+
+			</div><!-- /row -->
+	    </div> <!-- /container -->
+	</div><!-- /white -->
+	
+	
+	
+	<th:block th:include="./footer.html"> </th:block>
+
+	<th:block th:include="./fragments.html :: bootstrap-js"> </th:block>
+
+  </body>
+</html>
+
+<style>
+
+
+.recipe-details{
+	display: flex;
+	flex-direction: row;
+	gap: 5px;
+	<!-- background-color: #e7e7e7; -->
+	padding: 10px;
+	color: black;
+	border-radius: 60px;
+	width: fit-content;
+}
+
+.center{
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+</style>

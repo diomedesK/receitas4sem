@@ -45,6 +45,8 @@ public class RecipeDAO extends MySQLDAO implements RecipeDAOInterface {
 		recipe.setPrepareInMinutes(resultSet.getInt("prepare_in_minutes"));
 		recipe.setCookingMethod(resultSet.getString("cooking_method"));
 
+		recipe.setAdditionalInfo( resultSet.getString("additional_info") );
+
 		// Get categories
 		PreparedStatement getRecipeCategories = connection.prepareStatement("select c.name from ( ( recipes r join recipe_category rc on r.id = rc.recipe_id  ) join categories c on rc.category_id = c.id) where r.id = ?");
 		getRecipeCategories.setString(1, recipe.getID());
@@ -356,7 +358,7 @@ public class RecipeDAO extends MySQLDAO implements RecipeDAOInterface {
 
     public Optional<String> saveRecipe(RecipeModel recipe) {
         try (PreparedStatement insertRecipeStatement = connection.prepareStatement(
-                "INSERT INTO recipes (name, author_id, description, prepare_in_minutes, cooking_method) VALUES (?, ?, ?, ?, ?)",
+                "INSERT INTO recipes (name, author_id, description, prepare_in_minutes, cooking_method, additional_info) VALUES (?, ?, ?, ?, ?, ?)",
 				Statement.RETURN_GENERATED_KEYS)) 
 		{
             insertRecipeStatement.setString(1, recipe.getName());
@@ -364,6 +366,7 @@ public class RecipeDAO extends MySQLDAO implements RecipeDAOInterface {
             insertRecipeStatement.setString(3, recipe.getDescription());
             insertRecipeStatement.setInt(4, recipe.getPrepareInMinutes());
             insertRecipeStatement.setString(5, recipe.getCookingMethod());
+            insertRecipeStatement.setString(6, recipe.getAdditionalInfo());
             insertRecipeStatement.executeUpdate();
 
 			ResultSet generatedKeys = insertRecipeStatement.getGeneratedKeys();

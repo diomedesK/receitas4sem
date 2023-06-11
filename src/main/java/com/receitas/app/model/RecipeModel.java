@@ -25,6 +25,8 @@ public class RecipeModel{
 	private String authorID;
 	private String cookingMethod;
 
+	private String additionalInfo;
+
 	private int prepareInMinutes;
 
 	private LinkedHashSet<String> categories;
@@ -58,6 +60,7 @@ public class RecipeModel{
 		  	LinkedHashSet<IngredientModel> ingredientList,
 
 			@JsonProperty("Instructions") HashMap<Integer, String> instructions,
+			@JsonProperty("additionalInfo") String additionalInfo,
 			@JsonProperty("accessesWithinLast7Days") int accessesWithinLast7Days
 			)
 	{
@@ -71,6 +74,8 @@ public class RecipeModel{
 			this.cookingMethod = cookingMethod;
 			this.categories = categories;
 			this.instructions = instructions;
+			this.additionalInfo = additionalInfo;
+
 			this.accessesWithinLast7Days = accessesWithinLast7Days;
 
 		} catch(Exception e){
@@ -113,6 +118,15 @@ public class RecipeModel{
 
 	public String getDescription(){
 		return this.description;
+	}
+
+	public boolean setAdditionalInfo(String additionalInfo){
+		this.additionalInfo = additionalInfo;
+		return true;
+	}
+
+	public String getAdditionalInfo(){
+		return this.additionalInfo;
 	}
 
 	public boolean setPrepareInMinutes(int p){

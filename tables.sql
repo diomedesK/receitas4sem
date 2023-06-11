@@ -24,9 +24,10 @@ CREATE TABLE IF NOT EXISTS recipes (
 
 	name VARCHAR(100) NOT NULL,
 
-	description VARCHAR(50) NOT NULL,
+	description VARCHAR(500) NOT NULL,
 	prepare_in_minutes INT NOT NULL,
 	cooking_method VARCHAR(50) NOT NULL,
+	additional_info VARCHAR(1000),
 
 	PRIMARY KEY (id),
 	FOREIGN KEY (author_id) REFERENCES users(id)
@@ -153,7 +154,6 @@ INSERT IGNORE INTO recipe_ingredient (recipe_id, ingredient_id ) VALUES
 INSERT IGNORE INTO recipe_rating ( recipe_id, user_id, rating ) VALUES
 ('1', '1', 10),
 ('1', '2', 9);
-
 
 -- Search recipes by ingredient
 -- SELECT r.* FROM ( ( recipes r JOIN recipe_ingredient ri ON r.id = ri.recipe_id ) JOIN ingredients i ON ri.ingredient_id = i.id ) WHERE i.name LIKE "%pasta%"

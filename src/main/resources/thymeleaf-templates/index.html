@@ -2,12 +2,57 @@
 <html xmlns:th="http://www.thymeleaf.org" > 
 <head>
 <title>Thymeleaf Fragments: home</title>
+	<title> Receitas 4ADS </title>
+	<meta charset="UTF-8" />
 
-<th:block th:include="./fragments.html :: bootstrap-min"> </th:block>
+	<link th:href="@{/assets/css/bootstrap.css}" rel="stylesheet">
+	<link th:href="@{/assets/css/main.css}" rel="stylesheet">
+
+    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+	<script type="module" th:src="@{/myJS/populateRecipes.js}"></script>
 
 </head>
 <body>
-  <p th:text="${hello}">I hope bootstrap is working...</p>
+
+	<th:block th:include="./navbar.html" > </th:block>
+
+	<div id="white">
+		<div class="container">
+
+			<div class="row centered">
+
+				<div class="col-lg-6 col-lg-offset-3 centered mt-0">
+					<h3 id="resultSetTitle">RECEITAS POPULARES NOS ÚLTIMOS DIAS</h3>
+					<hr>
+					<p id="resultSetDescription">  </p>
+				</div>
+
+				<div id="recipe-container" > </div>
+
+			</div>
+
+		</div><!-- /container -->
+	</div>
+
+	<script>
+		window.onload = function(){
+			const wasPopulatedFromParams = window.populateRecipesFromURL();
+
+			if ( wasPopulatedFromParams == false ) {
+				window.populateRecipesFromAPI(`/api/recipes/popular`, document.getElementById("recipe-container")); 
+			}
+
+		}
+
+		window.addEventListener('popstate', (e) => { console.log('poped'); window.populateRecipesFromURL() });
+
+	</script>
+
+	<th:block th:include="./footer.html" > </th:block>
+	<th:block th:include="./fragments.html :: bootstrap-js"> </th:block>
 
 </body>
+
+
 </html>
+

@@ -78,11 +78,6 @@ public class RecipeController {
 		MyLogger.info("getByID");
         Optional<RecipeModel> recipe = recipeService.getRecipeByID(recipeID);
 
-		if ( recipe.isPresent() ){
-			recipeService.clearAccessesOfRecipeFromDaysAgo(recipeID, 7);
-			recipeService.addAccess(recipeID);
-		}
-
         context.json(recipe.orElseThrow(() -> new NotFoundResponse("Recipe not found")));
     }
 

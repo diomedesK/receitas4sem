@@ -49,7 +49,8 @@ public class RecipeService {
     }
 
     public List<RecipeModel> getPopularRecipes() {
-        return recipeDAO.getPopularRecipes(2);
+		System.out.println("getting popular");
+        return recipeDAO.getPopularRecipes(8);
     }
 
     public List<RecipeModel> getRecipesByName(String recipeName) {
@@ -65,12 +66,10 @@ public class RecipeService {
     }
 
     public ServiceAPIResponse addRecipeFromJSON(String recipeJSON) {
+
 		ObjectMapper mapper = new ObjectMapper();
 		try {
 			RecipeModel deserializedRecipe = mapper.readValue(recipeJSON, RecipeModel.class);
-
-			System.out.println(deserializedRecipe);
-			deserializedRecipe.getIngredients().forEach( (i) -> System.out.println(i) );
 
 			Optional<String> savedRecipeID = recipeDAO.saveRecipe( deserializedRecipe );
 			boolean wasAddedSuccesfuly = savedRecipeID.isPresent();
