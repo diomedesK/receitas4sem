@@ -8,7 +8,6 @@ import java.sql.ResultSet;
 
 abstract public class MySQLDAO {
 
-	
 	protected Connection getConnection() throws SQLException {
 		// Replace the following code with your own connection logic
 

@@ -246,6 +246,11 @@ bt {
 
 /** other **/
 
+#search-bar{
+	display: flex; 
+	flex-grow: 1;
+}
+
 .no-margin {
 	margin: 0px;
 }
@@ -271,7 +276,7 @@ bt {
 	justify-content: center;
 }
 
-#recipe-container {
+.recipe-container {
 	display: flex; 
 	flex-direction: row;
 	flex-wrap: wrap;
@@ -279,9 +284,7 @@ bt {
 
 	justify-content: center;
 	width: 100%;
-
 }
-
 
 
 @media (min-width: 992px) { 
@@ -291,3 +294,38 @@ bt {
 
 }
 
+.flex-center-horizontally{
+	display: flex;
+	justify-content: center;
+}
+
+.access-card{
+	flex-grow: 1;
+	flex-shrink: 1;
+	flex-basis: 70%;
+	min-width: 300px;
+	max-width: 500px;
+	padding: 20px;
+	box-shadow: 1px 3px 3px #cfcfcf;
+}
+
+.access-card .margin-bottom{
+	margin-bottom: 20px;
+}
+
+.access-card .access-response{
+    border-radius: 5px;
+    text-align: center;
+    padding: 10px;
+    background-color: #f06767;
+    color: white;
+	display: none;
+}
+
+#non-logged-stuff{
+	display: none;
+}
+
+#logged-stuff{
+	display: none;
+}

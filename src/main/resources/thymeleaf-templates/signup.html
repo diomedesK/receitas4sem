@@ -1,0 +1,107 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" > 
+<th:block th:include="./fragments.html :: necessary-styles-and-scripts" > </th:block>
+
+<body>
+
+	<th:block th:include="./navbar.html" > </th:block>
+
+	<div id="white">
+
+		<div class="mt flex-center-horizontally">	
+
+			<div class="access-card">
+
+				<p style="text-align: center"> Registrar-se </p>
+
+				<form id="signUpForm">
+					<div class="form-outline margin-bottom">
+						<input required placeholder="nome"type="text" id="name" class="form-control" />
+					</div>
+
+					<div class="form-outline margin-bottom">
+						<input required placeholder="email"type="email" id="email" class="form-control" />
+					</div>
+
+					<div class="form-outline margin-bottom">
+						<input required placeholder="nome de usuário" type="text" id="username" class="form-control" />
+					</div>
+
+					<div class="form-outline margin-bottom">
+						<input required placeholder="senha" type="password" id="password" class="form-control" />
+					</div>
+
+					<button type="submit" class="btn btn-primary btn-block margin-bottom"> Registrar-se </button>
+
+					<div class="text-center">
+						<p>Já possui conta? <a href="/acesso">Acessar sua conta</a></p>
+					</div>
+
+					<div id="signup-response" class="access-response">
+					</div>
+
+			</div>
+				</form>
+
+
+		</div>
+
+	</div>
+
+	<th:block th:include="./footer.html" > </th:block>
+	<th:block th:include="./fragments.html :: bootstrap-js"> </th:block>
+
+</body>
+
+<script type="module" defer>
+	const signUpForm = document.getElementById('signUpForm');
+
+	signUpForm.addEventListener("submit", async (e) => {
+	console.log(e);
+	  e.preventDefault();
+
+	  // Get the form fields
+	  const nameField = document.getElementById('name');
+	  const usernameField = document.getElementById('username');
+	  const emailField = document.getElementById('email');
+	  const passwordField = document.getElementById('password');
+
+	  // Construct the JSON payload
+	  const payload = {
+		name: nameField.value,
+		username: usernameField.value,
+		email: emailField.value,
+		password: passwordField.value
+	  };
+
+	  try {
+		const response = await fetch('/cadastro', {
+		  method: 'PUT',
+		  headers: {
+			'Content-Type': 'application/json'
+		  },
+		  body: JSON.stringify(payload)
+		});
+
+		if (response.ok) {
+		  const data = await response.json();
+		  console.log(data); // Print the response data to the console
+		  window.location.href = "/acesso" // TODO session-token is not received in a cookie
+		} else if (response.status === 400){
+			const data = await response.json();
+			const loginResponseCard =  document.getElementById("signup-response");
+			loginResponseCard.style.display = "block";
+			loginResponseCard.innerHTML = data.message;
+		} else {
+		  console.log('Error:', response.status);
+		}
+	  } catch (error) {
+		console.error('Error:', error);
+	  }
+	});
+
+</script>
+
+</html>
+
+

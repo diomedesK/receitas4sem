@@ -8,6 +8,10 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
+import java.sql.Timestamp;
+
+import java.time.LocalDateTime;
 
 import com.receitas.app.model.*;
 
@@ -34,8 +38,8 @@ public class UserDAO extends MySQLDAO implements UserDAOInterface  {
     }
 
 	public UserModel getRandomUserForTesting(){
-        try{
-			PreparedStatement statement = connection.prepareStatement("SELECT * from users limit 1");
+        try( PreparedStatement statement = connection.prepareStatement("SELECT * from users limit 1"); ){
+			
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 UserModel user = createUserFromResultSet(resultSet);
@@ -48,9 +52,9 @@ public class UserDAO extends MySQLDAO implements UserDAOInterface  {
 		return new UserModel();
 	}
 
+	@Override
     public Optional<List<RecipeModel>> getUserFavoriteRecipes(String userID) {
-		try {
-			PreparedStatement statement = connection.prepareStatement("SELECT * FROM favorite_user_recipes WHERE user_id = ?");
+		try ( PreparedStatement statement = connection.prepareStatement("SELECT * FROM favorite_user_recipes WHERE user_id = ?"); ) {
 
 			statement.setString(1, userID);
 			ResultSet resultSet = statement.executeQuery();
@@ -68,9 +72,9 @@ public class UserDAO extends MySQLDAO implements UserDAOInterface  {
         }
     }
 
+	@Override
     public boolean saveRecipeAsFavorite(String recipeID, String userID) {
-        try {
-			PreparedStatement statement = connection.prepareStatement("INSERT INTO favorite_user_recipes (user_id, recipe_id) VALUES (?, ?)");
+        try ( PreparedStatement statement = connection.prepareStatement("INSERT IGNORE INTO favorite_user_recipes (user_id, recipe_id) VALUES (?, ?)");  ) {
 
             statement.setString(1, userID);
             statement.setString(2, recipeID);
@@ -83,9 +87,10 @@ public class UserDAO extends MySQLDAO implements UserDAOInterface  {
         }
     }
 
+	@Override
     public boolean removeRecipeFromFavorites(String recipeID, String userID) {
-		try {
-			PreparedStatement statement = connection.prepareStatement("DELETE FROM favorite_user_recipes WHERE user_id = ? AND recipe_id = ?");
+		try ( PreparedStatement statement = connection.prepareStatement("DELETE FROM favorite_user_recipes WHERE user_id = ? AND recipe_id = ?"); ) {
+			
 			statement.setString(1, userID);
 			statement.setString(2, recipeID);
 			int rowsAffected = statement.executeUpdate();
@@ -96,40 +101,70 @@ public class UserDAO extends MySQLDAO implements UserDAOInterface  {
         }
     }
 
-    public boolean registerNewUser(UserModel user) {
-        try  {
-			PreparedStatement statement = connection.prepareStatement("INSERT INTO users (id, name, username, email, password) VALUES (?, ?, ?, ?, ?)");
+	@Override
+    public Optional<String> registerNewUser(UserModel user){
+        try ( PreparedStatement statement = connection.prepareStatement("INSERT INTO users (name, username, email, hashed_password) VALUES (?, ?, ?, ?)",
+				Statement.RETURN_GENERATED_KEYS)) {
 
-			statement.setString(1, user.getID());
-			statement.setString(2, user.getName());
-			statement.setString(3, user.getUsername());
-			statement.setString(4, user.getEmail());
-			statement.setString(5, user.getPassword());
+			statement.setString(1, user.getName());
+			statement.setString(2, user.getUsername());
+			statement.setString(3, user.getEmail());
+
+			statement.setString(4, user.getPassword()); //hash it
 			int rowsAffected = statement.executeUpdate();
-			return rowsAffected > 0;
+
+			ResultSet generatedKeys = statement.getGeneratedKeys();
+			generatedKeys.next();
+			int generatedID = generatedKeys.getInt(1);
+			generatedKeys.close();
+
+			return Optional.of( "" + generatedID );
+
 		} catch (SQLException e) {
-			e.printStackTrace();
-			return false;
+			throw new RuntimeException(e);
 		}
+
 	}
 
+	@Override
 	public boolean deleteUserByID( String userID ){
-		try  {
-			PreparedStatement statement = connection.prepareStatement("DELETE FROM users where id = ?");
 
-			statement.setString(1, userID);
-			int rowsAffected = statement.executeUpdate();
-			return rowsAffected > 0;
+		String[] neededStatements = {
+			/*
+			"DELETE FROM recipe_rating WHERE recipe_id IN (SELECT id FROM recipes WHERE author_id = ?);",
+			"DELETE FROM favorite_user_recipes WHERE user_id = ?;",
+			"DELETE FROM recipe_ingredient WHERE recipe_id IN (SELECT id FROM recipes WHERE author_id = ?);",
+			"DELETE FROM recipe_category WHERE recipe_id IN (SELECT id FROM recipes WHERE author_id = ?);",
+			"DELETE FROM recipe_instructions WHERE recipe_id IN (SELECT id FROM recipes WHERE author_id = ?)",
+			"DELETE FROM recipe_accesses WHERE recipe_id IN (SELECT id FROM recipes WHERE author_id = ?)",
+			"DELETE FROM recipes WHERE author_id = ?;",
+			"DELETE FROM recipes WHERE author_id = ?;",
+			"DELETE FROM sessions WHERE user_id = ?;",
+			*/
+			"DELETE FROM users WHERE id = ?;"
+		};
+
+		try{
+			for( String s : neededStatements ){
+				PreparedStatement statement = connection.prepareStatement(s);
+				statement.setString(1, userID);
+
+				int rowsAffected = statement.executeUpdate();
+				statement.close();
+			}
+
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return false;
 		}
 
+		return true;
+
 	}
 
+	@Override
 	public Optional<UserModel> authenticateUserByUsername(String username, String hashedPassword) {
-		try  {
-			PreparedStatement statement = connection.prepareStatement("SELECT * FROM users WHERE username = ? AND password = ?");
+		try ( PreparedStatement statement = connection.prepareStatement("SELECT * FROM users WHERE username = ? AND hashed_password = ?"); ) {
 
 			statement.setString(1, username);
 			statement.setString(2, hashedPassword);
@@ -146,12 +181,14 @@ public class UserDAO extends MySQLDAO implements UserDAOInterface  {
 		}
 	}
 
+	@Override
 	public Optional<UserModel> authenticateUserByEmail(String email, String hashedPassword) {
-		try{
-			PreparedStatement statement = connection.prepareStatement("SELECT * FROM users WHERE email = ? AND password = ?");statement.setString(1, email);
-
+		try( PreparedStatement statement = connection.prepareStatement("SELECT * FROM users WHERE email = ? AND hashed_password = ?"); ){
+			statement.setString(1, email);
 			statement.setString(2, hashedPassword);
+
 			ResultSet resultSet = statement.executeQuery();
+
 			if (resultSet.next()) {
 				UserModel user = createUserFromResultSet(resultSet);
 				return Optional.of(user);
@@ -164,13 +201,90 @@ public class UserDAO extends MySQLDAO implements UserDAOInterface  {
 		}
 	}
 
+	public Optional<UserModel> getUserDataFromSessionToken( String token ){
+		try( PreparedStatement statement = connection.prepareStatement("select u.* from ( sessions s join users u on s.user_id = u.id ) where session_id = ? and expiration > now()") ){
+			statement.setString(1, token);
+			
+			ResultSet resultSet = statement.executeQuery();
+
+			if (resultSet.next()){
+				UserModel user = createUserFromResultSet(resultSet);
+				return Optional.of(user);
+			} else{
+				return Optional.empty();
+			}
+
+		} catch ( SQLException e ){
+			e.printStackTrace();
+			return Optional.empty();
+		}
+
+	}
+
+	public Optional<String> getUserIDBySessionToken( String token ){
+		try( PreparedStatement statement = connection.prepareStatement("select user_id from sessions where session_id = ? and expiration > now()") ){
+			statement.setString(1, token);
+			
+			ResultSet resultSet = statement.executeQuery();
+
+			if (resultSet.next()){
+				return Optional.of( resultSet.getString("user_id") );
+			} else{
+				return Optional.empty();
+			}
+
+		} catch ( SQLException e ){
+			e.printStackTrace();
+			return Optional.empty();
+		}
+
+	}
+
+	public boolean saveUserSession( String userID, String sessionToken, LocalDateTime expirationTimestamp ){
+		try (PreparedStatement statement = connection.prepareStatement(
+					"INSERT INTO sessions (user_id, session_id, expiration) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE session_id = VALUES(`session_id`), expiration = VALUES(`expiration`)")) {
+			statement.setString(1, userID);
+			statement.setString(2, sessionToken);
+			statement.setTimestamp(3, Timestamp.valueOf(expirationTimestamp));
+			statement.executeUpdate();
+
+			return true;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return false;
+	}
+
+	public boolean removeUserSession( String sessionToken ){
+        try ( PreparedStatement statement = connection.prepareStatement("DELETE FROM sessions where session_id = ?");  ) {
+            statement.setString(1, sessionToken);
+            int rowsAffected = statement.executeUpdate();
+
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+	}
+
 	private UserModel createUserFromResultSet(ResultSet resultSet) throws SQLException {
 		UserModel user = new UserModel();
 		user.setID(resultSet.getString("id"));
 		user.setName(resultSet.getString("name"));
 		user.setUsername(resultSet.getString("username"));
 		user.setEmail(resultSet.getString("email"));
-		user.setPassword(resultSet.getString("password"));
+		user.setPassword(resultSet.getString("hashed_password"));
+
+		Optional<List<RecipeModel>> favoritedRecipes = getUserFavoriteRecipes( user.getID() );
+
+		if ( favoritedRecipes.isPresent() ){
+			favoritedRecipes.get().forEach( recipe -> {
+				user.addFavoriteRecipe( recipe );
+			});
+		}
+
 		return user;
 	}
 

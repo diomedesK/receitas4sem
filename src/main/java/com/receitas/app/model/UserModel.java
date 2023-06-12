@@ -6,7 +6,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.*;
 
 @JsonRootName("user")
-@JsonPropertyOrder({ "id", "name", "usernam", "email" })
+@JsonPropertyOrder({ "id", "name", "username", "email" })
 public class UserModel  {
 
 	private String name;
@@ -24,7 +24,6 @@ public class UserModel  {
 
 	@JsonCreator
 	public UserModel(
-			@JsonProperty("id") String id,
 			@JsonProperty("name") String name,
 			@JsonProperty("username") String username,
 			@JsonProperty("email") String email,
@@ -37,7 +36,6 @@ public class UserModel  {
 		this.email = email;
 		this.password = password;
 		this.favoritedRecipes = favoritedRecipes;
-		this.id = id;
 	}
 
 	public boolean setID(String id){
@@ -81,6 +79,7 @@ public class UserModel  {
 		return true;
 	}
 
+	@JsonIgnore
 	public String getPassword(){
 		return this.password;
 	}

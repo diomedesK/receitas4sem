@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Optional;
 
 import com.receitas.app.service.RecipeService;
+import com.receitas.app.service.UserService;
 import com.receitas.app.service.ServiceAPIResponse;
+
 import com.receitas.app.model.RecipeModel;
 
 import com.receitas.app.utils.MyLogger;
@@ -21,12 +23,37 @@ public class RecipeController {
 	 */
 
     private final RecipeService recipeService;
+	private final UserService userService;
 
-    public RecipeController(RecipeService recipeService) {
+    public RecipeController(RecipeService recipeService, UserService userService) {
         this.recipeService = recipeService;
+		this.userService = userService;
     }
 
+	public void getRecipePage(Context context) {
+		// Retrieve your data model, for example:
+		RecipeModel recipe = RecipeService.getInstance().getRecipeByID(context.pathParam("id")).get();
+
+		if (recipe != null) {
+			RecipeService.getInstance().clearAccessesOfRecipeFromDaysAgo(context.pathParam("id"), 7);
+			RecipeService.getInstance().addAccess(context.pathParam("id"));
+			
+			context.attribute("recipe", recipe);
+
+			System.out.println("categoies " + recipe.getCategories());
+			recipe.getCategories().forEach( (c) -> System.out.println(c) );
+
+			context.render("recipe.html");
+
+		} else {
+			// Handle the case when the recipe is not found
+			context.status(404);
+		}
+
+	};
+
 	public void getRecipes( Context context ){
+
 		if( context.queryParamMap().containsKey("id") ){
 			getRecipeByID(
 					context,
@@ -39,32 +66,33 @@ public class RecipeController {
 					context.queryParam("authorID")
 					);
 
-		}  else if ( context.queryParamMap().containsKey("ingredient") ){
+		}  else if ( context.queryParamMap().containsKey("ingrediente") ){
 			getRecipesByIngredients(
 					context,
-					context.queryParam("ingredient").split(":")
+					context.queryParam("ingrediente").split(":")
 					);
 
-		} else if ( context.queryParamMap().containsKey("category")){
+		} else if ( context.queryParamMap().containsKey("categoria")){
 			getRecipesByCategories(
 					context, 
-					context.queryParam("category").split(":")
+					context.queryParam("categoria").split(":")
 					);
 
-		} else if ( context.queryParamMap().containsKey("name")){
+		} else if ( context.queryParamMap().containsKey("nome")){
 			getRecipesByName(
 					context,
-					context.queryParam("name")
+					context.queryParam("nome")
 					);
 			
 		} else {
-			getAllRecipes(context);
+			getManyRecipes(context);
 		}
 
 	}
 
-    public void getAllRecipes(Context context) {
-        List<RecipeModel> recipes = recipeService.getAllRecipes();
+    public void getManyRecipes(Context context) {
+		// limit by 16, should be dynamic
+        List<RecipeModel> recipes = recipeService.getManyRecipes(8);
         context.json(recipes);
     }
 
@@ -78,7 +106,12 @@ public class RecipeController {
 		MyLogger.info("getByID");
         Optional<RecipeModel> recipe = recipeService.getRecipeByID(recipeID);
 
-        context.json(recipe.orElseThrow(() -> new NotFoundResponse("Recipe not found")));
+		if ( recipe.isPresent() ){
+			context.json(recipe);
+		} else {
+			context.status(404);
+		}
+
     }
 
     public void getRecipesByAuthorID(Context context, String authorID) {
@@ -100,17 +133,23 @@ public class RecipeController {
 
     public void getRecipesByName(Context context, String name) {
 		MyLogger.info("getByName");
-        List<RecipeModel> recipes = recipeService.getRecipesByName( context.queryParam("name") );
+        List<RecipeModel> recipes = recipeService.getRecipesByName(name);
         context.json(recipes);
     }
 
     public void addRecipeJSON(Context context) {
-        ServiceAPIResponse r = recipeService.addRecipeFromJSON( context.body() );
-
-		context.status( r.status ).json(r.message);
+		Optional<String> userID = userService.getUserIDBySessionToken( context.cookie("session-token") );
+		if ( userID.isPresent() ){
+			ServiceAPIResponse r = recipeService.addRecipeFromJSON( context.body(), userID.get() );
+			context.status( r.status ).json(r.message);
+		} else {
+			context.status(403);
+			return;
+		}
     }
 
 	public void addRecipeRating(Context context){
+		Optional<String> userID = userService.getUserIDBySessionToken( context.cookie("session-token") );
 		context.status(404);
 	}
 
@@ -121,5 +160,6 @@ public class RecipeController {
 
         context.status(res.status).json(res.message);
     }
+
 
 }

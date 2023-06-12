@@ -4,13 +4,11 @@ function populateRecipesFromAPI( url, targetContainer ){
 		.then(data => {
 
 			data.forEach(recipe => {
-				console.log(recipe);
-
 				const recipeBlock = document.createElement('div');
 				recipeBlock.classList.add("recipe-card");
 
 						recipeBlock.innerHTML = `
-						  <a href="/recipes/${recipe.id}">
+						  <a href="/receitas/${recipe.id}">
 							  <h3>${recipe.name}</h3>
 						  </a>
 						  <p class="no-margin">${recipe.description}</p>
@@ -32,26 +30,39 @@ function populateRecipesFromAPI( url, targetContainer ){
 
 }
 
-function populateRecipesFromURL() {
+function populateRecipesFromURLParams() {
 	const url = new URL(window.location.href);
 	const pathname = url.pathname;
 
 	if (pathname === '/busca' && url.searchParams.has('q')) {
-		const searchText = url.searchParams.get('q');
+		let targetQuery = ""
+		let resultPlaceholderText = ""
 
-		const targetContainer = document.getElementById("recipe-container");
+		const searchText = url.searchParams.get('q').toLowerCase();
+		const ingredientQuery = searchText.match(/\bingrediente:([\w:]+)/);
+
+		if ( ingredientQuery != null && ingredientQuery[1] != null ){
+			targetQuery = `api/receitas?ingrediente=${ingredientQuery[1]}`
+			resultPlaceholderText = `ingrediente:${ingredientQuery[1]}`.toUpperCase();
+		} else {
+			targetQuery = `/api/receitas?nome=${encodeURIComponent(searchText)}`
+			resultPlaceholderText = searchText.toUpperCase();
+		}
+
+		const targetContainer = document.getElementById("dynamic-recipe-container");
+		document.getElementById("dynamicResultTitle").innerHTML = `RESULTADOS PARA "${resultPlaceholderText}"`;
+		document.getElementById("dynamicResultDescription").innerHTML = ``;
 		targetContainer.innerHTML = '';
 
-		document.getElementById("resultSetTitle").innerHTML = `RESULTADOS PARA "${searchText.toUpperCase()}"`;
-		document.getElementById("resultSetDescription").innerHTML = ``;
+		document.getElementById("homePageRandomRecipes").style.display = "none";
+		document.getElementById("homePageRandomRecipes").style.display = "none";
 
-
-		populateRecipesFromAPI(`/api/recipes?name=${encodeURIComponent(searchText)}`, targetContainer);
+		populateRecipesFromAPI(targetQuery, targetContainer);
 		return true;
 	}
 
 	return false;
 }
 
-window.populateRecipesFromURL = populateRecipesFromURL
+window.populateRecipesFromURLParams = populateRecipesFromURLParams
 window.populateRecipesFromAPI = populateRecipesFromAPI

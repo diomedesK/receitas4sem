@@ -11,11 +11,23 @@ CREATE TABLE IF NOT EXISTS users (
 	name VARCHAR(100) NOT NULL,
 	username VARCHAR(50) NOT NULL,
 	email VARCHAR(100) NOT NULL,
-	password VARCHAR(100) NOT NULL,
+	hashed_password VARCHAR(100) NOT NULL,
 
 	PRIMARY KEY (id),
 	UNIQUE KEY (username),
 	UNIQUE KEY (email)
+);
+
+CREATE TABLE IF NOT EXISTS sessions (
+	id INT NOT NULL AUTO_INCREMENT,
+	user_id INT NOT NULL,
+	session_id VARCHAR(100) NOT NULL,
+	expiration TIMESTAMP NOT NULL,
+	PRIMARY KEY (id),
+
+	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+
+	UNIQUE KEY (user_id)
 );
 
 CREATE TABLE IF NOT EXISTS recipes (
@@ -30,15 +42,18 @@ CREATE TABLE IF NOT EXISTS recipes (
 	additional_info VARCHAR(1000),
 
 	PRIMARY KEY (id),
-	FOREIGN KEY (author_id) REFERENCES users(id)
+
+	FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS recipe_accesses (
     id INT NOT NULL AUTO_INCREMENT,
     recipe_id INT NOT NULL,
     accessed_at DATETIME NOT NULL,
+
     PRIMARY KEY (id),
-    FOREIGN KEY (recipe_id) REFERENCES recipes(id)
+
+    FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS recipe_instructions (
@@ -47,7 +62,8 @@ CREATE TABLE IF NOT EXISTS recipe_instructions (
 	instruction_description VARCHAR(500) NOT NULL,
 
 	PRIMARY KEY ( recipe_id, INSTRUCTION_STEP ),
-	FOREIGN KEY ( recipe_id ) REFERENCES recipes(id)
+
+	FOREIGN KEY ( recipe_id ) REFERENCES recipes(id) ON DELETE CASCADE
 
 );
 
@@ -56,8 +72,10 @@ CREATE TABLE IF NOT EXISTS favorite_user_recipes (
 	recipe_id INT NOT NULL NOT NULL,
 
 	PRIMARY KEY (user_id, recipe_id),
-	FOREIGN KEY (user_id) REFERENCES users(id),
-	FOREIGN KEY (recipe_id) REFERENCES recipes(id)
+
+	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+
+	FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS categories (
@@ -73,7 +91,7 @@ CREATE TABLE IF NOT EXISTS recipe_category(
 
 	PRIMARY KEY ( recipe_id, category_id ),
 	
-	FOREIGN KEY ( recipe_id ) REFERENCES recipes(id),
+	FOREIGN KEY ( recipe_id ) REFERENCES recipes(id) ON DELETE CASCADE,
 	FOREIGN KEY ( category_id ) REFERENCES categories(id)
 );
 
@@ -91,7 +109,7 @@ CREATE TABLE IF NOT EXISTS recipe_ingredient (
 
 	PRIMARY KEY ( recipe_id, ingredient_id ),
 
-	FOREIGN KEY ( recipe_id ) REFERENCES recipes(id),
+	FOREIGN KEY ( recipe_id ) REFERENCES recipes(id) ON DELETE CASCADE,
 	FOREIGN KEY ( ingredient_id ) REFERENCES ingredients(id)
 );
 
@@ -102,18 +120,19 @@ CREATE TABLE IF NOT EXISTS recipe_rating (
 
 	PRIMARY KEY ( recipe_id, user_id ),
 
-	FOREIGN KEY ( recipe_id ) REFERENCES recipes(id),
-	FOREIGN KEY ( user_id ) REFERENCES users(id)
+	FOREIGN KEY ( recipe_id ) REFERENCES recipes(id) ON DELETE CASCADE,
+	FOREIGN KEY ( user_id ) REFERENCES users(id) ON DELETE CASCADE
 
 );
 
 -- Add some values
 
-INSERT IGNORE INTO users (name, username, email, password)
+INSERT IGNORE INTO users (name, username, email, hashed_password)
 VALUES
-('John Doe', 'johndoe', 'johndoe@example.com', 'password1'),
-('Jane Smith', 'janesmith', 'janesmith@example.com', 'password2'),
-('Mike Johnson', 'mikejohnson', 'mikejohnson@example.com', 'password3');
+('John Doe', 'johndoe', 'johndoe@example.com', 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f'),
+('Jane Smith', 'janesmith', 'janesmith@example.com', 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f'),
+('Mike Johnson', 'mikejohnson', 'mikejohnson@example.com', 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f');
+-- All passwords are 'password123'
 
 
 INSERT IGNORE INTO recipes (name, author_id, description, prepare_in_minutes, cooking_method)

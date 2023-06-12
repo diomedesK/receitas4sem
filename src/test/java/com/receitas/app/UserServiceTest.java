@@ -1,12 +1,17 @@
 package com.receitas.app;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
 
 import java.util.List;
 import java.util.Optional;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.TestMethodOrder;
+
 import com.receitas.app.model.RecipeModel;
 import com.receitas.app.model.UserModel;
 import com.receitas.app.service.ServiceAPIResponse;
@@ -14,34 +19,83 @@ import com.receitas.app.service.UserService;
 
 import com.receitas.app.dao.UserDAO;
 import com.receitas.app.dao.RecipeDAO;
+import com.receitas.app.service.SessionData;
+
 import com.receitas.app.utils.MyLogger;
 
+
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class UserServiceTest {
 
     private static UserService userService = UserService.getInstance();
 
-	public static UserModel sampleUser;
-	public static RecipeModel sampleRecipe;
+	private static RecipeModel sampleRecipe;
+
+	private static String addedUserFromJSONID;
+
+	private static String userJSON = "{\"name\":\"John\",\"username\":\"jonjohny\",\"email\":\"john@mail.com\", \"password\":\"password123\", \"favoritedRecipes\":[]}";
 
     @BeforeAll
     public static void setUp() {
-		sampleUser = UserDAO.getInstance().getRandomUserForTesting();
 		sampleRecipe = RecipeDAO.getInstance().getRandomRecipeForTesting();
+
+    }
+
+
+    @AfterAll
+	@Test
+    public static void deleteUserByID() {
+        ServiceAPIResponse response = userService.deleteUserByID(addedUserFromJSONID);
+        Assertions.assertEquals(202, response.status);
+    }
+
+    @Test
+	@Order(1)
+    public void testRegisterNewUserFromJSON() {
+        ServiceAPIResponse response = userService.registerNewUserFromJSON(userJSON);
+        Assertions.assertEquals(201, response.status);
+
+		addedUserFromJSONID = response.message;
+    }
+
+    @Test
+	@Order(2)
+    public void testRegisterDuplicatedUser() {
+        ServiceAPIResponse response = userService.registerNewUserFromJSON(userJSON);
+        Assertions.assertEquals(400, response.status);
+    }
+
+    @Test
+	@Order(3)
+    public void testAuthenticateUserCorrectPassword(){
+        Optional<SessionData> userSession = userService.authenticateUserByUsername("jonjohny", "password123");
+        Assertions.assertTrue( userSession.isPresent() );
+    }
+
+    @Test
+	@Order(4)
+    public void testAuthenticateUserIncorrectPassword(){
+        Optional<SessionData> userSession = userService.authenticateUserByUsername("jonjohny", "incorrect");
+        Assertions.assertTrue( userSession.isEmpty() );
+    }
+
+    @Test
+	@Order(5)
+    public void testAuthenticateUserByEmailCorrectPassword(){
+        Optional<SessionData> userSession = userService.authenticateUserByEmail("john@mail.com", "password123");
+        Assertions.assertTrue( userSession.isPresent() );
     }
 
     @Test
     public void testGetUserFavoriteRecipes() {
-        String userID = sampleUser.getID();
-        Optional<List<RecipeModel>> recipes = userService.getUserFavoriteRecipes(userID);
+        Optional<List<RecipeModel>> recipes = userService.getUserFavoriteRecipes(addedUserFromJSONID);
         Assertions.assertTrue(recipes.isPresent());
-        // Perform assertions based on expected results
     }
 
     @Test
     public void testSaveRecipeAsFavorite() {
         String recipeID = sampleRecipe.getID();
-        String userID = sampleUser.getID();
-        ServiceAPIResponse response = userService.saveRecipeAsFavorite(recipeID, userID);
+        ServiceAPIResponse response = userService.saveRecipeAsFavorite(recipeID, addedUserFromJSONID);
 
         Assertions.assertEquals(200, response.status);
     }
@@ -49,54 +103,11 @@ public class UserServiceTest {
     @Test
     public void testRemoveRecipeFromFavorites() {
         String recipeID = sampleRecipe.getID();
-        String userID = sampleUser.getID();
-        ServiceAPIResponse response = userService.removeRecipeFromFavorites(recipeID, userID);
+        ServiceAPIResponse response = userService.removeRecipeFromFavorites(recipeID, addedUserFromJSONID);
 
         Assertions.assertEquals(200, response.status);
     }
 
-    @Test
-    public void testRegisterNewUserFromJSON() {
-        String userJSON = "{\"id\":\"99\", \"name\":\"John\",\"username\":\"jonjohny\",\"email\":\"john@mail.com\", \"password\":\"hashed123\", \"favoritedRecipes\":[]}";
-        ServiceAPIResponse response = userService.registerNewUserFromJSON(userJSON);
-        Assertions.assertEquals(201, response.status);
-    }
-
-    @Test
-    public void deleteUserByID() {
-        ServiceAPIResponse response = userService.deleteUserByID("99");
-        Assertions.assertEquals(202, response.status);
-    }
-
-    @Test
-    public void testAuthenticateUserByUsername() {
-        Optional<UserModel> user = userService.authenticateUserByUsername(
-				sampleUser.getUsername(),
-				sampleUser.getPassword()
-				);
-
-        Assertions.assertTrue(user.isPresent());
-		Assertions.assertFalse( userService.authenticateUserByUsername(
-				sampleUser.getUsername(),
-				"invalidPassword"
-				).isPresent()
-				);
-    }
-
-    @Test
-    public void testAuthenticateUserByEmail() {
-        Optional<UserModel> user = userService.authenticateUserByEmail(
-				sampleUser.getEmail(),
-				sampleUser.getPassword()
-				);
-
-        Assertions.assertTrue(user.isPresent());
-		Assertions.assertFalse( userService.authenticateUserByEmail(
-				sampleUser.getEmail(),
-				"invalidPassword"
-				).isPresent()
-				);
-    }
 
 
 }

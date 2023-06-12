@@ -20,9 +20,13 @@ public class RecipeService {
     private static RecipeDAO recipeDAO;
 	private static RecipeService instance;
 
+	private static ObjectMapper mapper = new ObjectMapper();
+	private static ServiceAPIResponse invalidJSONResponse = new ServiceAPIResponse("Invalid JSON", 400);
+
     private RecipeService() {
         recipeDAO = RecipeDAO.getInstance();
     }
+
 
 	public static RecipeService getInstance(){
 		if ( instance == null ){
@@ -36,8 +40,9 @@ public class RecipeService {
 		return instance;
 	}
 
-	public List<RecipeModel> getAllRecipes(){
-		return recipeDAO.getAllRecipes();
+
+	public List<RecipeModel> getManyRecipes( int count ){
+		return recipeDAO.getManyRecipes(count);
 	}
 
     public Optional<RecipeModel> getRecipeByID(String recipeID) {
@@ -49,7 +54,6 @@ public class RecipeService {
     }
 
     public List<RecipeModel> getPopularRecipes() {
-		System.out.println("getting popular");
         return recipeDAO.getPopularRecipes(8);
     }
 
@@ -66,12 +70,39 @@ public class RecipeService {
     }
 
     public ServiceAPIResponse addRecipeFromJSON(String recipeJSON) {
+		try {
+			RecipeModel deserializedRecipe = mapper.readValue(recipeJSON, RecipeModel.class);
+			return addRecipe( deserializedRecipe );
 
-		ObjectMapper mapper = new ObjectMapper();
+		} catch( UnrecognizedPropertyException e){
+			return invalidJSONResponse;
+		} catch ( JsonMappingException jme ){
+			return invalidJSONResponse;
+		} catch ( JsonProcessingException  jpe){
+			return invalidJSONResponse;
+		}  
+	}
+
+    public ServiceAPIResponse addRecipeFromJSON(String recipeJSON, String authorID) {
 		try {
 			RecipeModel deserializedRecipe = mapper.readValue(recipeJSON, RecipeModel.class);
 
-			Optional<String> savedRecipeID = recipeDAO.saveRecipe( deserializedRecipe );
+			deserializedRecipe.setAuthorID(authorID);
+
+			return addRecipe( deserializedRecipe );
+
+		} catch( UnrecognizedPropertyException e){
+			return invalidJSONResponse;
+		} catch ( JsonMappingException jme ){
+			return invalidJSONResponse;
+		} catch ( JsonProcessingException  jpe){
+			return invalidJSONResponse;
+		}  
+	}
+
+	public ServiceAPIResponse addRecipe( RecipeModel recipe ){
+		try {
+			Optional<String> savedRecipeID = recipeDAO.saveRecipe( recipe );
 			boolean wasAddedSuccesfuly = savedRecipeID.isPresent();
 
 			if ( wasAddedSuccesfuly ){
@@ -80,24 +111,18 @@ public class RecipeService {
 				return new ServiceAPIResponse("Invalid JSON", 400 );
 			}
 
-		} catch( UnrecognizedPropertyException e){
-			return new ServiceAPIResponse("Invalid JSON", 400 );
-		} catch ( JsonMappingException jme ){
-			return new ServiceAPIResponse("Invalid JSON", 400 );
-		} catch ( JsonProcessingException  jpe){
-			return new ServiceAPIResponse("Invalid JSON", 400 );
 		} catch( RuntimeException e) {
 			if ( e.getCause() instanceof java.sql.SQLIntegrityConstraintViolationException ){
 				/* There should be handling for specific situations where
 				 * the provided author is unxistent, for example */
-				return new ServiceAPIResponse("Invalid JSON", 400);
+				return new ServiceAPIResponse(e.getCause().getMessage(), 400);
 
 			} else {
 				return new ServiceAPIResponse("Unexpected", 317);
 			}
 		}
 
-    }
+	}
 
     public ServiceAPIResponse deleteRecipeByID(String recipeID) {
 

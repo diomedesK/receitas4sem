@@ -15,9 +15,9 @@
 
 			<div class="navbar-collapse collapse">
 
-				<ul class="nav navbar-nav navbar-right" style="display: flex; flex-wrap: wrap; align-items: center">
+				<ul class="nav navbar-nav navbar-right" style="display: flex; flex-wrap: wrap; align-items: center; gap: 5px;">
 
-					<div class="input-group" id="search-bar" style="display: flex; flex-grow: 1">
+					<li class="input-group" id="search-bar" style="padding-inline: 5px" >
 						<div class="form-outline" style="width: 100%;">
 							<input type="search" placeholder="Bolo de cenoura" id="search-input" class="form-control" style="border-radius: 5px;"/>
 						</div>
@@ -25,12 +25,19 @@
 						<button id="search-btn" type="button" class="btn btn-primary" style="border-radius: 5px; padding: 0px; padding-inline: 5px;" >
 							<span style="font-size: 20px;">🔍</span>
 						</button>
-					</div>
+					</li>
 
+					<li th:if="${userData}"><span th:text="'Olá, ' + ${userData.name}"> </span></li>
+					<li th:if="${userData}"><a th:href="@{/favoritos}">Favoritos</a></li>
+					<li th:if="${userData}"><a th:href="@{/sair}">Sair</a></li>
 
-					<li><a th:href="@{/acesso}">Acesso</a></li>
-					<li><a th:href="@{/cadastro}">Cadastro</a></li>
-					<li><a th:href="@{/sobre}">Sobre</a></li>
+					<li th:if="${userData}"><a th:href="@{/receitas}">Sair</a></li>
+
+					<li th:unless="${userData}"> <a th:href="@{/acesso}">Acesso</a></li>
+					<li th:unless="${userData}"> <a th:href="@{/cadastro}">Cadastro</a></li>
+
+					<!-- <li><a th:href="@{/sobre}">Sobre</a></li> -->
+
 				</ul>
 			</div><!--/.nav-collapse -->
 		</div>
@@ -39,6 +46,10 @@
 </div>
 
 <style> 
+
+span{
+	color: white;
+}
 
 
 @media (min-width: 992px) { 
@@ -65,27 +76,6 @@
 	const button = document.getElementById('search-btn');
 
 
-	/*
-	function handleSearch() {
-		const searchText = input.value;
-
-		if (searchText.trim() === '') {
-			return;
-		}
-
-		// Function to handle the search
-		history.pushState({}, `Busca por "${searchText}"`, `busca?q=${encodeURIComponent(searchText)}`);
-
-		const targetContainer = document.getElementById("recipe-container");
-		targetContainer.innerHTML = '';
-
-		document.getElementById("resultSetTitle").innerHTML = `RESULTADOS PARA "${searchText.toUpperCase()}"`;
-		document.getElementById("resultSetDescription").innerHTML = ``;
-
-		populateRecipesFromAPI(`/api/recipes?name=${encodeURIComponent(searchText)}`, targetContainer);
-	}
-	*/
-
 	function handleSearch() {
 		const searchText = input.value.trim();
 
@@ -96,8 +86,7 @@
 		const url = `/busca?q=${encodeURIComponent(searchText)}`;
 		history.pushState({}, `Busca por "${searchText}"`, url);
 
-		window.populateRecipesFromURL();
-		<!-- window.dispatchEvent(new Event('popstate')); -->
+		window.populateRecipesFromURLParams();
 	}
 
 	// Add event listener for button click

@@ -3,7 +3,12 @@ package com.receitas.app.dao;
 import com.receitas.app.model.RecipeModel;
 import com.receitas.app.model.IngredientModel;
 
-import java.sql.*;
+import java.sql.Statement;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -110,21 +115,21 @@ public class RecipeDAO extends MySQLDAO implements RecipeDAOInterface {
 
     }
 
-    public List<RecipeModel> getAllRecipes() {
-        List<RecipeModel> recipes = new ArrayList<>();
-        try (
-             Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery("SELECT * FROM recipes")) {
+	public List<RecipeModel> getManyRecipes(int count) {
+		List<RecipeModel> recipes = new ArrayList<>();
+		try ( PreparedStatement statement = connection.prepareStatement( "SELECT * FROM recipes ORDER BY RAND() LIMIT ?");) {
+			statement.setInt(1, count);
 
-            while (resultSet.next()) {
+			ResultSet resultSet = statement.executeQuery();
+			while (resultSet.next()) {
 				recipes.add( createRecipeFromResultSet( resultSet ));
-            }
+			}
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return recipes;
-    }
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return recipes;
+	}
 
 	public boolean clearAccessesOfRecipeFromDaysAgo( String recipeID, int olderThanDays){
         try ( 
@@ -292,62 +297,23 @@ public class RecipeDAO extends MySQLDAO implements RecipeDAOInterface {
     public boolean deleteRecipeByID(String id) {
 		MyLogger.info("Deleting recipe of ID " + id);
 
-        try (PreparedStatement deleteInstructionStatement = connection.prepareStatement(
-                "DELETE FROM recipe_instructions WHERE recipe_id = ?")) {
-            deleteInstructionStatement.setString(1, id);
-            deleteInstructionStatement.executeUpdate();
-        } catch (SQLException e) {
-			MyLogger.error("deleteInstructionStatement");
-            e.printStackTrace();
-            return false;
-        }
+		String[] neededStatements = {
+			/* "DELETE FROM recipe_instructions WHERE recipe_id = ?",
+			"DELETE FROM recipe_rating WHERE recipe_id = ?",
+			"DELETE FROM recipe_ingredient WHERE recipe_id = ?",
+			"DELETE FROM recipe_category WHERE recipe_id = ?",
+			"DELETE FROM recipe_accesses WHERE recipe_id = ?",
+			"DELETE FROM favorite_user_recipes WHERE recipe_id = ?", */
+			"DELETE FROM recipes WHERE id = ?"
+		};
 
-        try (PreparedStatement deleteRatingStatement = connection.prepareStatement(
-                "DELETE FROM recipe_rating WHERE recipe_id = ?")) {
-            deleteRatingStatement.setString(1, id);
-            deleteRatingStatement.executeUpdate();
+        try{
+			for ( String s : neededStatements ){
+				PreparedStatement statement = connection.prepareStatement(s);
+				statement.setString(1, id);
+				statement.executeUpdate();
+			}
         } catch (SQLException e) {
-			MyLogger.error("deleteRatingStatement");
-            e.printStackTrace();
-            return false;
-        }
-
-        try (PreparedStatement deleteIngredientStatement = connection.prepareStatement(
-                "DELETE FROM recipe_ingredient WHERE recipe_id = ?")) {
-            deleteIngredientStatement.setString(1, id);
-            deleteIngredientStatement.executeUpdate();
-        } catch (SQLException e) {
-			MyLogger.error("deleteIngredientStatement");
-            e.printStackTrace();
-            return false;
-        }
-
-        try (PreparedStatement deleteCategoryStatement = connection.prepareStatement(
-                "DELETE FROM recipe_category WHERE recipe_id = ?")) {
-            deleteCategoryStatement.setString(1, id);
-            deleteCategoryStatement.executeUpdate();
-        } catch (SQLException e) {
-			MyLogger.error("deleteCategoryStatement");
-            e.printStackTrace();
-            return false;
-        }
-
-        try (PreparedStatement deleteFavoriteRecipeStatement = connection.prepareStatement(
-                "DELETE FROM favorite_user_recipes WHERE recipe_id = ?")) {
-            deleteFavoriteRecipeStatement.setString(1, id);
-            deleteFavoriteRecipeStatement.executeUpdate();
-        } catch (SQLException e) {
-			MyLogger.error("deleteFavoriteRecipeStatement");
-            e.printStackTrace();
-            return false;
-        }
-
-        try (PreparedStatement deleteRecipeStatement = connection.prepareStatement(
-                "DELETE FROM recipes WHERE id = ?")) {
-            deleteRecipeStatement.setString(1, id);
-            deleteRecipeStatement.executeUpdate();
-        } catch (SQLException e) {
-			MyLogger.error("deleteRecipeStatement");
             e.printStackTrace();
             return false;
         }
@@ -373,7 +339,7 @@ public class RecipeDAO extends MySQLDAO implements RecipeDAOInterface {
 			generatedKeys.next();
 			int generatedID = generatedKeys.getInt(1);
 			recipe.setID(""+ generatedID);
-			MyLogger.info("Generated ID: " + generatedID);
+			MyLogger.info("Generated recipe ID: " + generatedID);
 			generatedKeys.close();
 
         } catch (SQLException e) {

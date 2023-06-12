@@ -1,0 +1,93 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" > 
+<th:block th:include="./fragments.html :: necessary-styles-and-scripts" > </th:block>
+
+<body>
+	<th:block th:include="./navbar.html" > </th:block>
+
+	<div id="white">
+
+		<div class="mt flex-center-horizontally">	
+
+			<div class="access-card">
+
+				<p style="text-align: center"> Acesse sua conta </p>
+
+				<form id="loginForm" >
+
+					<div class="form-outline margin-bottom">
+						<input type="email" placeholder="email" id="email" class="form-control" />
+					</div>
+
+					<div class="form-outline margin-bottom">
+						<input placeholder="senha" type="password" id="password" class="form-control" />
+					</div>
+
+					<button type="submit" class="btn btn-primary btn-block margin-bottom"> Acessar </button>
+
+					<div class="text-center">
+						<p>Ainda não é membro? <a href="/cadastro">Registrar-se</a></p>
+					</div>
+
+				</form>
+
+				<div id="login-response" class="access-response">
+				</div>
+
+			</div>
+
+		</div>
+
+	</div>
+
+	<th:block th:include="./footer.html" > </th:block>
+	<th:block th:include="./fragments.html :: bootstrap-js"> </th:block>
+
+</body>
+
+<script type="module" defer>
+	const loginForm = document.getElementById('loginForm');
+
+	loginForm.addEventListener("submit", async (e) => {
+	  e.preventDefault();
+
+	  // Get the form fields
+	  const emailField = document.getElementById('email');
+	  const passwordField = document.getElementById('password');
+
+	  // Construct the JSON payload
+	  const payload = {
+		email: emailField.value,
+		password: passwordField.value
+	  };
+
+	  try {
+		const response = await fetch('/acesso', {
+		  method: 'POST',
+		  headers: {
+			'Content-Type': 'application/json'
+		  },
+		  body: JSON.stringify(payload)
+		});
+
+		// Check if the response was successful
+		if (response.ok) {
+		  const data = await response.json();
+		  console.log(data); // Print the response data to the console
+		  window.location.href = "/home"
+		} else if (response.status === 403){
+			const loginResponseCard =  document.getElementById("login-response");
+			loginResponseCard.style.display = "block";
+			loginResponseCard.innerHTML = "Email ou senha inválidos"
+		} else {
+		  console.log('Error:', response.status);
+		}
+	  } catch (error) {
+		console.error('Error:', error);
+	  }
+	});
+
+</script>
+
+</html>
+

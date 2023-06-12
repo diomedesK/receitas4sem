@@ -1,17 +1,8 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org" > 
-<head>
-<title>Thymeleaf Fragments: home</title>
-	<title> Receitas 4ADS </title>
-	<meta charset="UTF-8" />
 
-	<link th:href="@{/assets/css/bootstrap.css}" rel="stylesheet">
-	<link th:href="@{/assets/css/main.css}" rel="stylesheet">
+<th:block th:include="./fragments.html :: necessary-styles-and-scripts" > </th:block>
 
-    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
-	<script type="module" th:src="@{/myJS/populateRecipes.js}"></script>
-
-</head>
 <body>
 
 	<th:block th:include="./navbar.html" > </th:block>
@@ -21,13 +12,26 @@
 
 			<div class="row centered">
 
-				<div class="col-lg-6 col-lg-offset-3 centered mt-0">
-					<h3 id="resultSetTitle">RECEITAS POPULARES NOS ÚLTIMOS DIAS</h3>
-					<hr>
-					<p id="resultSetDescription">  </p>
+				<div id="homePageRandomRecipes" style="display: none">
+					<div class="col-lg-6 col-lg-offset-3 centered mt-0">
+						<h3> RECEITAS PARA VOCÊ </h3>
+						<hr>
+					</div>
+
+					<div class="recipe-container" id="random-recipe-container" > </div>
 				</div>
 
-				<div id="recipe-container" > </div>
+				<div>
+
+					<div class="col-lg-6 col-lg-offset-3 centered mt">
+						<h3 id="dynamicResultTitle"></h3>
+						<hr>
+						<p id="dynamicResultDescription">  </p>
+					</div>
+
+					<div class="recipe-container" id="dynamic-recipe-container" > </div>
+
+				</div>
 
 			</div>
 
@@ -35,16 +39,33 @@
 	</div>
 
 	<script>
-		window.onload = function(){
-			const wasPopulatedFromParams = window.populateRecipesFromURL();
 
+		function addStuff(){ 
+
+			if (  new URL(window.location.href).pathname  == '/home' ){
+				document.getElementById("homePageRandomRecipes").style.display = "block";
+			} else {
+				document.getElementById("homePageRandomRecipes").style.display = "none";
+				console.log("not home")
+			}
+
+			const wasPopulatedFromParams = window.populateRecipesFromURLParams();
 			if ( wasPopulatedFromParams == false ) {
-				window.populateRecipesFromAPI(`/api/recipes/popular`, document.getElementById("recipe-container")); 
+				document.getElementById("dynamicResultTitle").innerHTML = `RECEITAS POPULARES NOS ÚLTIMOS DIAS`;
+				document.getElementById("dynamicResultDescription").innerHTML = ``;
+
+				window.populateRecipesFromAPI(`/api/receitas/popular/`, document.getElementById("dynamic-recipe-container")); 
 			}
 
 		}
 
-		window.addEventListener('popstate', (e) => { console.log('poped'); window.populateRecipesFromURL() });
+		window.onload = () => {
+			window.populateRecipesFromAPI(`/api/receitas/`, document.getElementById("random-recipe-container")); 
+			addStuff()
+		};
+
+		
+		window.addEventListener('popstate', (e) => { addStuff() });
 
 	</script>
 

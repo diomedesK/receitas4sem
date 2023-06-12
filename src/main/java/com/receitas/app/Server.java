@@ -3,6 +3,7 @@ package com.receitas.app;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Optional;
+import java.io.InputStream;
 
 /*
  * "Javalin looks for template files in src/resources, and uses the correct rendering engine based on the extension of the provided template."
@@ -10,28 +11,24 @@ import java.util.Optional;
  * */
 
 import io.javalin.Javalin;
-import io.javalin.plugin.rendering.JavalinRenderer;
-import io.javalin.plugin.rendering.template.JavalinThymeleaf;
-
-import java.io.InputStream;
 import io.javalin.http.Handler;
-
-import org.thymeleaf.templatemode.TemplateMode;
-import org.thymeleaf.TemplateEngine;
-
-import org.thymeleaf.context.Context;
-import org.thymeleaf.context.WebContext;
-
-
-import com.receitas.app.controller.RecipeController;
-import com.receitas.app.service.RecipeService;
-
-import com.receitas.app.model.*;
-
+import io.javalin.plugin.rendering.JavalinRenderer;
+import static io.javalin.apibuilder.ApiBuilder.put;
 import static io.javalin.apibuilder.ApiBuilder.get;
 import static io.javalin.apibuilder.ApiBuilder.post;
 import static io.javalin.apibuilder.ApiBuilder.delete;
-import static io.javalin.apibuilder.ApiBuilder.put;
+import io.javalin.plugin.rendering.template.JavalinThymeleaf;
+
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.templatemode.TemplateMode;
+import org.thymeleaf.context.Context;
+
+import com.receitas.app.service.UserService;
+import com.receitas.app.service.RecipeService;
+import com.receitas.app.controller.UserController;
+import com.receitas.app.controller.RecipeController;
+
+import com.receitas.app.model.UserModel;
 
 
 public class Server {
@@ -40,9 +37,12 @@ public class Server {
 			ThymeleafConfig.templateResolver( TemplateMode.HTML, "/thymeleaf-templates/", ".html")
 			);
 
+	private static final UserService userService = UserService.getInstance();
+
 	public static void main(String[] args) {
 
-		RecipeController recipeController = new RecipeController(RecipeService.getInstance());
+		UserController userController = new UserController(UserService.getInstance());
+		RecipeController recipeController = new RecipeController(RecipeService.getInstance(), UserService.getInstance());
 
 		Javalin app = Javalin.create(config -> {
 			// add static file folder
@@ -63,20 +63,42 @@ public class Server {
 
 		}).start( getPort() );
 
+		app.before(ctx -> {
+			String sessionToken = ctx.cookie("session-token");
+			if( sessionToken != null ){
+				Optional<UserModel> userData = userService.getUserDataFromSessionToken(sessionToken);
+				if( userData.isPresent() ){
+					// the database gets queried all the time TODO
+					ctx.attribute("userData", userData.get());
+				}
+			}
+
+		});
+
 		app.routes(() -> {
 
 			get("/", (ctx) -> ctx.redirect("/home"));
+			get("/busca", homePageHandler);
 			get("/home", homePageHandler);
 
-			get("/busca", homePageHandler);
+			get("/acesso", userController::accessPageHandler);
+			get("/cadastro", userController::signUpPageHandler);
 
-			put("/recipes", recipeController::addRecipeJSON);
-			get("/recipes/:id", recipePageHandler); // also handles to query params
-			put("/recipes/:id/ratings", recipeController::addRecipeRating);
-			delete("/recipes/:id", recipeController::deleteRecipe);
+			put("/receitas", recipeController::addRecipeJSON);
+			get("/receitas/:id", recipeController::getRecipePage); // also handles query params
+			put("/receitas/:id/avaliacoes", recipeController::addRecipeRating);
+			delete("/receitas/:id", recipeController::deleteRecipe);
 
-			get("/api/recipes", recipeController::getRecipes); // also handles to query params
-			get("/api/recipes/popular", recipeController::getPopularRecipes); // also handles to query params
+			get("/api/receitas", recipeController::getRecipes); // also handles to query params
+			get("/api/receitas/popular", recipeController::getPopularRecipes); // also handles to query params
+
+			get("/perfil/:id", ( ctx ) -> ctx.redirect("/home"));  // not yet
+			get("/perfil/:id/favoritos", userController::getFavoritesPage); 
+			get("/api/perfil/", userController::getUserDataFromSessionToken); 
+
+			put("/cadastro", userController::signUpUser);
+			post("/acesso", userController::loginUser);
+			get("/sair/", userController::logoutHandler); 
 
 		});
 
@@ -86,32 +108,9 @@ public class Server {
 
 
 	private static final Handler homePageHandler = (ctx) -> {
-		Map<String, Object> model = new HashMap<>();
-		model.put("hello", "Hello, World.");
-		ctx.render("index.html", model);
+		ctx.render("index.html");
 	};
 
-
-	private static final Handler recipePageHandler = (ctx) -> {
-		// Retrieve your data model, for example:
-		RecipeModel recipe = RecipeService.getInstance().getRecipeByID(ctx.pathParam("id")).get();
-
-		if (recipe != null) {
-			RecipeService.getInstance().clearAccessesOfRecipeFromDaysAgo(ctx.pathParam("id"), 7);
-			RecipeService.getInstance().addAccess(ctx.pathParam("id"));
-			
-			ctx.attribute("recipe", recipe);
-
-			System.out.println("categoies " + recipe.getCategories());
-			recipe.getCategories().forEach( (c) -> System.out.println(c) );
-
-			ctx.render("recipe.html");
-
-		} else {
-			// Handle the case when the recipe is not found
-			ctx.status(404);
-		}
-	};
 
 	private static final Handler JS = (ctx) -> {
 		String jsFileName = ctx.pathParam("jsFile");
