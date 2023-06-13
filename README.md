@@ -1,10 +1,5 @@
 # RECEITAS 4 ADS
 
-<style>
-code {
-    zoom: 0.8;
-}
-</style>
 
 - Crie o banco de dados seguindo o modelo do arquivo <a href="./tables.sql">tables.sql</a>  
 
