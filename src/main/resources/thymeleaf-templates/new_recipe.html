@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<head>
+	<title th:text="Nova receita"></title>
+	<meta charset="UTF-8" />
+
+	<th:block th:include="./fragments.html :: necessary-styles-and-scripts" > </th:block>
+
+</head>
+
+  <body>
+
+	<th:block th:include="./navbar.html"> </th:block>
+
+	<div id="white">
+
+	    <div class="container">
+			<div class="row">
+
+				<div class="mt flex-center-horizontally">	
+					<div class="access-card">
+						<p style="text-align: center"> Adicionar Nova Receita </p>
+						<form id="addRecipeForm">
+							<div class="form-outline margin-bottom">
+								<input required placeholder="Título" type="text" id="title" class="form-control" />
+							</div>
+							<div class="form-outline margin-bottom">
+								<input required placeholder="Ingredientes" type="text" id="ingredients" class="form-control" />
+							</div>
+							<div class="form-outline margin-bottom">
+								<textarea required placeholder="Instruções" id="instructions" class="form-control"></textarea>
+							</div>
+							<button type="submit" class="btn btn-primary btn-block margin-bottom"> Adicionar Receita </button>
+							<div class="text-center">
+								<p><a href="/home">Voltar para a página inicial</a></p>
+							</div>
+							<div id="add-recipe-response" class="access-response">
+							</div>
+						</form>
+					</div>
+				</div>
+
+
+			</div><!-- /row -->
+	    </div> <!-- /container -->
+	</div><!-- /white -->
+	
+	
+	
+	<th:block th:include="./footer.html"> </th:block>
+
+	<th:block th:include="./fragments.html :: bootstrap-js"> </th:block>
+
+  </body>
+</html>
+
+<style>
+
+.btn-favorite-true {
+	background-color: #eb5353;
+	padding: 5px;
+	border-radius: 5px;
+	color: white;
+	border: none;
+}
+
+.btn-favorite-false {
+	background-color: #006ec0;
+	padding: 5px;
+	border-radius: 5px;
+	color: white;
+	border: none;
+}
+
+.recipe-details{
+	display: flex;
+	flex-direction: row;
+	gap: 5px;
+	<!-- background-color: #e7e7e7; -->
+	padding: 10px;
+	color: black;
+	border-radius: 60px;
+	width: fit-content;
+}
+
+.center{
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+</style>

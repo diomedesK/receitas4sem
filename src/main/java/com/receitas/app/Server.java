@@ -76,13 +76,14 @@ public class Server {
 		});
 
 		app.routes(() -> {
-
 			get("/", (ctx) -> ctx.redirect("/home"));
 			get("/busca", homePageHandler);
 			get("/home", homePageHandler);
 
 			get("/acesso", userController::accessPageHandler);
 			get("/cadastro", userController::signUpPageHandler);
+
+			get("/novareceita", recipeController::getNewRecipePage);
 
 			put("/receitas", recipeController::addRecipeJSON);
 			get("/receitas/:id", recipeController::getRecipePage); // also handles query params
@@ -94,7 +95,12 @@ public class Server {
 
 			get("/perfil/:id", ( ctx ) -> ctx.redirect("/home"));  // not yet
 			get("/perfil/:id/favoritos", userController::getFavoritesPage); 
+
 			get("/api/perfil/", userController::getUserDataFromSessionToken); 
+
+			put("/perfil/favoritos/:recipe_id", userController::saveFavoriteRecipe); 
+			delete("/perfil/favoritos/:recipe_id", userController::deleteFavoriteRecipe); 
+
 
 			put("/cadastro", userController::signUpUser);
 			post("/acesso", userController::loginUser);

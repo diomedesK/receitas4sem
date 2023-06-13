@@ -55,7 +55,6 @@ function populateRecipesFromURLParams() {
 		targetContainer.innerHTML = '';
 
 		document.getElementById("homePageRandomRecipes").style.display = "none";
-		document.getElementById("homePageRandomRecipes").style.display = "none";
 
 		populateRecipesFromAPI(targetQuery, targetContainer);
 		return true;

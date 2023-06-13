@@ -32,16 +32,21 @@ public class RecipeController {
 
 	public void getRecipePage(Context context) {
 		// Retrieve your data model, for example:
-		RecipeModel recipe = RecipeService.getInstance().getRecipeByID(context.pathParam("id")).get();
+		
+		String recipeID = context.pathParam("id");
+		RecipeModel recipe = RecipeService.getInstance().getRecipeByID( recipeID ).get();
 
 		if (recipe != null) {
-			RecipeService.getInstance().clearAccessesOfRecipeFromDaysAgo(context.pathParam("id"), 7);
-			RecipeService.getInstance().addAccess(context.pathParam("id"));
+			recipeService.clearAccessesOfRecipeFromDaysAgo(recipeID, 7);
+			recipeService.addAccess(context.pathParam("id"));
 			
 			context.attribute("recipe", recipe);
-
-			System.out.println("categoies " + recipe.getCategories());
-			recipe.getCategories().forEach( (c) -> System.out.println(c) );
+			if (context.attribute("userData") != null){
+				System.out.println(context.cookie("session-token"));
+				boolean wasRecipeFavorited = userService.hasUserFavoritedRecipeFromSessionToken( context.cookie("session-token"), recipeID );
+				context.attribute("wasRecipeFavorited", wasRecipeFavorited);
+				System.out.println(wasRecipeFavorited);;
+			}
 
 			context.render("recipe.html");
 
@@ -51,6 +56,10 @@ public class RecipeController {
 		}
 
 	};
+
+	public void getNewRecipePage( Context context ){
+		context.render("new_recipe.html");
+	}
 
 	public void getRecipes( Context context ){
 
@@ -91,7 +100,7 @@ public class RecipeController {
 	}
 
     public void getManyRecipes(Context context) {
-		// limit by 16, should be dynamic
+		// limit by 8 should be dynamic
         List<RecipeModel> recipes = recipeService.getManyRecipes(8);
         context.json(recipes);
     }
@@ -149,14 +158,14 @@ public class RecipeController {
     }
 
 	public void addRecipeRating(Context context){
-		Optional<String> userID = userService.getUserIDBySessionToken( context.cookie("session-token") );
+		// Optional<String> userID = userService.getUserIDBySessionToken( context.cookie("session-token") );
 		context.status(404);
 	}
 
     public void deleteRecipe(Context context) {
-        String recipeId = context.pathParam("id");
-		System.out.println(recipeId);
-        ServiceAPIResponse res = recipeService.deleteRecipeByID(recipeId);
+        String recipeID = context.pathParam("id");
+		System.out.println(recipeID);
+        ServiceAPIResponse res = recipeService.deleteRecipeByID(recipeID);
 
         context.status(res.status).json(res.message);
     }

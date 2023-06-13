@@ -54,7 +54,7 @@ public class RecipeService {
     }
 
     public List<RecipeModel> getPopularRecipes() {
-        return recipeDAO.getPopularRecipes(8);
+        return recipeDAO.getPopularRecipes(4);
     }
 
     public List<RecipeModel> getRecipesByName(String recipeName) {

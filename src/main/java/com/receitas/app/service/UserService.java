@@ -59,7 +59,6 @@ public class UserService{
 
 	public ServiceAPIResponse removeRecipeFromFavorites( String recipeID, String userID ){
         boolean res = userDAO.removeRecipeFromFavorites(recipeID, userID);
-
 		if ( res == true ){
 			return new ServiceAPIResponse("Recipe removed succesfuly", 200);
 		} else {
@@ -169,7 +168,15 @@ public class UserService{
 		}
 
 	}
-	
+
+	public boolean hasUserFavoritedRecipe( String userID, String recipeID ){
+		return userDAO.hasUserFavoritedRecipe(userID, recipeID);
+	}
+
+	public boolean hasUserFavoritedRecipeFromSessionToken( String sessionToken, String recipeID ){
+		return userDAO.hasUserFavoritedRecipeFromSessionToken(sessionToken, recipeID);
+	}
+
 	public Optional<UserModel> getUserDataFromSessionToken( String sessionToken ){
 		return userDAO.getUserDataFromSessionToken(sessionToken);
 	}

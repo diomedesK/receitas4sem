@@ -5,9 +5,7 @@
 	<title th:text="${recipe.name}"></title>
 	<meta charset="UTF-8" />
 
-	<link th:href="@{/assets/css/bootstrap.css}" rel="stylesheet">
-	<link th:href="@{/assets/css/main.css}" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+	<th:block th:include="./fragments.html :: necessary-styles-and-scripts" > </th:block>
 
 </head>
 
@@ -15,21 +13,17 @@
 
 	<th:block th:include="./navbar.html"> </th:block>
 
-	<!-- +++++ Post +++++ -->
 	<div id="white">
 
 	    <div class="container">
 			<div class="row">
-				<div class="col-lg-8 col-lg-offset-2">
+				<div class="col-lg-8 col-lg-offset-2" style="display: flex; flex-direction: column">
 
 					<h3 style="text-align: center" th:text="${recipe.name}"></h3>
-
 
 					<div class="center">
 
 						<div class="center" style="display: flex; gap: 10px; flex-direction: row; font-size: 12px">
-
-							<!-- <p class="no-margin" > By <ba>ghost autor</ba ></p> -->
 
 							<div class="recipe-details">
 								<p  class="no-margin">  <span> 🕛 </span> <span th:text="${recipe.prepareInMinutes}"></span> minutos </p>
@@ -37,6 +31,58 @@
 							</div>
 						</div>
 
+					</div>
+
+					<div th:if="${userData}" style="align-self: end">
+
+					<button id="favoriteButton" type="button" style="padding: 5px;" 
+						th:class=" ${wasRecipeFavorited} ? 'btn-favorite-true' : 'btn-favorite-false'">
+						<span th:text="${wasRecipeFavorited} ? 'Remover favorito' : 'Favoritar'"></span>
+					</button>
+
+					<script>
+						function favoriteUnfavorite() {
+							var recipeId = [[${recipe.id}]]
+
+							// Toggle the isFavorited value
+							isFavorited = !isFavorited;
+							
+							var button = document.getElementById('favoriteButton');
+							
+							if (isFavorited) {
+								button.classList.add('btn-favorite-true');
+								button.classList.remove('btn-favorite-false');
+								button.textContent = 'Remover favorito';
+
+								// Send a POST request to add the favorite
+								fetch('/perfil/favoritos/' + recipeId, {
+									method: 'PUT'
+								}).then(response => {
+									// Handle the response
+								}).catch(error => {
+									// Handle the error
+								});
+							} else {
+								button.classList.add('btn-favorite-false');
+								button.classList.remove('btn-favorite-true');
+								button.textContent = 'Favoritar';
+
+								// Send a DELETE request to remove the favorite
+								fetch('/perfil/favoritos/' + recipeId, {
+									method: 'DELETE'
+
+								}).then(response => {
+									// Handle the response
+								}).catch(error => {
+									// Handle the error
+								});
+							}
+						}
+
+						document.getElementById("favoriteButton").addEventListener("click", (e) => favoriteUnfavorite())
+						var isFavorited = [[${wasRecipeFavorited}]]; 
+
+					</script>
 					</div>
 
 					<br>
@@ -93,6 +139,21 @@
 
 <style>
 
+.btn-favorite-true {
+	background-color: #eb5353;
+	padding: 5px;
+	border-radius: 5px;
+	color: white;
+	border: none;
+}
+
+.btn-favorite-false {
+	background-color: #006ec0;
+	padding: 5px;
+	border-radius: 5px;
+	color: white;
+	border: none;
+}
 
 .recipe-details{
 	display: flex;

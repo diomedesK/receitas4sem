@@ -17,7 +17,7 @@
 
 				<ul class="nav navbar-nav navbar-right" style="display: flex; flex-wrap: wrap; align-items: center; gap: 5px;">
 
-					<li class="input-group" id="search-bar" style="padding-inline: 5px" >
+					<li th:unless="${recipe} or ${#strings.startsWith(#httpServletRequest.getRequestURI(), '/perfil/')} and ${#strings.contains(#httpServletRequest.getRequestURI(), '/favoritos')}" class="input-group" id="search-bar" style="padding-inline: 5px" >
 						<div class="form-outline" style="width: 100%;">
 							<input type="search" placeholder="Bolo de cenoura" id="search-input" class="form-control" style="border-radius: 5px;"/>
 						</div>
@@ -27,16 +27,13 @@
 						</button>
 					</li>
 
-					<li th:if="${userData}"><span th:text="'Olá, ' + ${userData.name}"> </span></li>
-					<li th:if="${userData}"><a th:href="@{/favoritos}">Favoritos</a></li>
+					<li th:if="${userData}"><span style="color: white" th:text="'Olá, ' + ${userData.name}"> </span></li>
+					<li th:if="${userData}"><a th:href="@{'/perfil/' + ${userData.id} + '/favoritos/'}">Favoritos</a></li>
 					<li th:if="${userData}"><a th:href="@{/sair}">Sair</a></li>
 
-					<li th:if="${userData}"><a th:href="@{/receitas}">Sair</a></li>
 
 					<li th:unless="${userData}"> <a th:href="@{/acesso}">Acesso</a></li>
 					<li th:unless="${userData}"> <a th:href="@{/cadastro}">Cadastro</a></li>
-
-					<!-- <li><a th:href="@{/sobre}">Sobre</a></li> -->
 
 				</ul>
 			</div><!--/.nav-collapse -->
@@ -46,10 +43,6 @@
 </div>
 
 <style> 
-
-span{
-	color: white;
-}
 
 
 @media (min-width: 992px) { 

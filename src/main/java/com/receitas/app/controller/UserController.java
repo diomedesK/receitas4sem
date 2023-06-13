@@ -63,6 +63,30 @@ public class UserController {
 
 
 	public void getFavoritesPage( Context context ){
+		context.render("user_favorites.html");
+	}
+
+	public void saveFavoriteRecipe( Context context ){
+        String recipeID = context.pathParam("recipe_id");
+		UserModel user = context.attribute("userData");
+		if ( user != null ){
+			ServiceAPIResponse res = userService.saveRecipeAsFavorite(recipeID, user.getID());
+			context.status(res.status);
+		} else {
+			context.status(403);
+		}
+
+	}
+
+	public void deleteFavoriteRecipe( Context context ){
+        String recipeID = context.pathParam("recipe_id");
+		UserModel user = context.attribute("userData");
+		if ( user != null ){
+			ServiceAPIResponse res = userService.removeRecipeFromFavorites(recipeID, user.getID());
+			context.status(res.status);
+		} else {
+			context.status(403);
+		}
 
 	}
 

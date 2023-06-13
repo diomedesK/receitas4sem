@@ -90,10 +90,12 @@ public class UserDAO extends MySQLDAO implements UserDAOInterface  {
 	@Override
     public boolean removeRecipeFromFavorites(String recipeID, String userID) {
 		try ( PreparedStatement statement = connection.prepareStatement("DELETE FROM favorite_user_recipes WHERE user_id = ? AND recipe_id = ?"); ) {
+
 			
 			statement.setString(1, userID);
 			statement.setString(2, recipeID);
 			int rowsAffected = statement.executeUpdate();
+			System.out.println(rowsAffected);
 			return rowsAffected > 0;
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -200,6 +202,41 @@ public class UserDAO extends MySQLDAO implements UserDAOInterface  {
 			return Optional.empty();
 		}
 	}
+
+	public boolean hasUserFavoritedRecipe( String userID, String recipeID ){
+		try( PreparedStatement statement = connection.prepareStatement("SELECT COUNT(1) as c FROM favorite_user_recipes WHERE user_id = ? and recipe_id = ?;") ){
+			statement.setString(1, userID);
+			statement.setString(2, recipeID);
+			
+			ResultSet resultSet = statement.executeQuery();
+
+			if (resultSet.next()){
+				return resultSet.getInt("c") == 1;
+			} 
+		} catch ( SQLException e ){
+			e.printStackTrace();
+		}
+
+		return false;
+	}
+
+	public boolean hasUserFavoritedRecipeFromSessionToken( String sessionToken, String recipeID ){
+		try( PreparedStatement statement = connection.prepareStatement("SELECT COUNT(1) as c FROM  ( favorite_user_recipes f join sessions s on f.user_id = s.user_id ) where s.session_id = ?  and  f.recipe_id = ?") ){
+			statement.setString(1, sessionToken);
+			statement.setString(2, recipeID);
+			
+			ResultSet resultSet = statement.executeQuery();
+			if (resultSet.next()){
+				return resultSet.getInt("c") == 1;
+			} 
+
+		} catch ( SQLException e ){
+			e.printStackTrace();
+		}
+
+		return false;
+	}
+
 
 	public Optional<UserModel> getUserDataFromSessionToken( String token ){
 		try( PreparedStatement statement = connection.prepareStatement("select u.* from ( sessions s join users u on s.user_id = u.id ) where session_id = ? and expiration > now()") ){
