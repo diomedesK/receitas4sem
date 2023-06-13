@@ -8,7 +8,12 @@ code {
 
 - Crie o banco de dados seguindo o modelo do arquivo <a href="./tables.sql">tables.sql</a>  
 
-- Adicione suas credenciais ao arquivo .env
+- Adicione suas credenciais ao arquivo .env, como em
+``` shell
+DB_URL=jdbc:mysql://localhost:3306/receitas4ADS
+DB_USER=usuario
+DB_PASSWORD=senha
+```
 
 - Construa o programa 
 ``` shell
