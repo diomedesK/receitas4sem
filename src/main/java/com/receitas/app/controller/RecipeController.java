@@ -42,7 +42,6 @@ public class RecipeController {
 			
 			context.attribute("recipe", recipe);
 			if (context.attribute("userData") != null){
-				System.out.println(context.cookie("session-token"));
 				boolean wasRecipeFavorited = userService.hasUserFavoritedRecipeFromSessionToken( context.cookie("session-token"), recipeID );
 				context.attribute("wasRecipeFavorited", wasRecipeFavorited);
 				System.out.println(wasRecipeFavorited);;
@@ -58,7 +57,12 @@ public class RecipeController {
 	};
 
 	public void getNewRecipePage( Context context ){
-		context.render("new_recipe.html");
+		if (context.attribute("userData") != null){
+			context.render("new_recipe.html");
+		} else {
+			context.redirect("/");
+		}
+
 	}
 
 	public void getRecipes( Context context ){
@@ -150,7 +154,7 @@ public class RecipeController {
 		Optional<String> userID = userService.getUserIDBySessionToken( context.cookie("session-token") );
 		if ( userID.isPresent() ){
 			ServiceAPIResponse r = recipeService.addRecipeFromJSON( context.body(), userID.get() );
-			context.status( r.status ).json(r.message);
+			context.status( r.status ).json(r);
 		} else {
 			context.status(403);
 			return;

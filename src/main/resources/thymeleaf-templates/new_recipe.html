@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
 
 <head>
-	<title th:text="Nova receita"></title>
+	<title>Nova receita</title>
 	<meta charset="UTF-8" />
 
 	<th:block th:include="./fragments.html :: necessary-styles-and-scripts" > </th:block>
@@ -22,24 +22,178 @@
 					<div class="access-card">
 						<p style="text-align: center"> Adicionar Nova Receita </p>
 						<form id="addRecipeForm">
+
 							<div class="form-outline margin-bottom">
-								<input required placeholder="Título" type="text" id="title" class="form-control" />
+								<label for="name">Nome da receita</label>
+								<input required placeholder="Nome" type="text" id="name" class="form-control" />
+							</div>
+
+							<div class="form-outline margin-bottom">
+								<label for="description">Descrição</label>
+								<textarea required placeholder="Descrição" id="description" class="form-control"></textarea>
+							</div>
+
+							<div class="form-outline margin-bottom">
+								<label for="category">Categoria</label>
+								<input placeholder="Categoria" type="text" id="category" name="category" class="form-control" />
+							</div>
+
+							<div class="form-outline margin-bottom">
+								<label for="cookingMethod">Método de preparo</label>
+								<input required placeholder="Método de preparo" type="text" id="cookingMethod" class="form-control" />
+							</div>
+
+							<div class="form-outline margin-bottom">
+								<label for="prepareInMinutes">Tempo de preparo</label>
+								<input required placeholder="Minutos p/ preparo" type="number" id="prepareInMinutes" class="form-control" >
+							</div>
+
+							<div id="ingredientsList" class="item-list"></div>
+							<div class="form-outline margin-bottom">
+								<label for="ingredients">Ingredientes</label>
+								<input type="text" placeholder="Pressione enter para adicionar um novo ingrediente" id="ingredients" class="form-control" onkeydown="handleEnter(event, 'ingredientsList')"></input>
+							</div>
+
+							<div id="instructionsList" class="item-list">
 							</div>
 							<div class="form-outline margin-bottom">
-								<input required placeholder="Ingredientes" type="text" id="ingredients" class="form-control" />
+								<label for="instructions">Instruções</label>
+								<textarea placeholder="Pressione enter para adicionar uma nova instrução" id="instructions" class="form-control" onkeydown="handleEnterForInstruction(event, 'instructionsList')"></textarea>
 							</div>
+
+
 							<div class="form-outline margin-bottom">
-								<textarea required placeholder="Instruções" id="instructions" class="form-control"></textarea>
+								<label for="additionalInfo">Informações adicionais</label>
+								<textarea placeholder="Informações adicionais" id="additionalInfo" class="form-control"></textarea>
 							</div>
+
+							<div id="add-recipe-response" class="response-box" style="margin-bottom: 1em"> </div>
+
 							<button type="submit" class="btn btn-primary btn-block margin-bottom"> Adicionar Receita </button>
 							<div class="text-center">
-								<p><a href="/home">Voltar para a página inicial</a></p>
+								<p><a href="/">Voltar para a página inicial</a></p>
 							</div>
-							<div id="add-recipe-response" class="access-response">
-							</div>
+
+
 						</form>
 					</div>
 				</div>
+
+				<script>
+
+					function handleEnter(event, listId) {
+						if (event.key === "Enter") {
+							event.preventDefault();
+							const input = event.target;
+							const value = input.value.trim();
+							if (value !== "") {
+								const itemList = document.getElementById(listId);
+								const listItem = document.createElement("div");
+								listItem.classList.add("item");
+								listItem.innerHTML = `
+									<span class="item-text">${value}</span>
+									<span class="btn delete-item" onclick="removeItem(this)">x</span>
+								`;
+								itemList.appendChild(listItem);
+								input.value = "";
+							}
+						}
+					}
+
+					function handleEnterForInstruction(event, listId) {
+						if (event.key === "Enter") {
+							event.preventDefault();
+							const input = event.target;
+							const value = input.value.trim();
+							if (value !== "") {
+								const itemList = document.getElementById(listId);
+								const listItem = document.createElement("div");
+								listItem.classList.add("item");
+								const instructionNumber = itemList.childElementCount + 1;
+								listItem.innerHTML = `
+									<span class="item-number">${instructionNumber}.</span>
+									<span class="item-text">${value}</span>
+									<span class="btn delete-item" onclick="removeItem(this)">x</span>
+								`;
+								itemList.appendChild(listItem);
+								input.value = "";
+							}
+						}
+					}
+
+					function removeItem(button) {
+						const item = button.closest(".item");
+						item.remove();
+					}
+
+
+					document.getElementById("addRecipeForm").addEventListener("submit", function (event) {
+						event.preventDefault();
+
+						const name = document.getElementById("name").value;
+						const description = document.getElementById("description").value;
+						const prepareInMinutes = parseInt(document.getElementById("prepareInMinutes").value);
+						const cookingMethod = document.getElementById("cookingMethod").value;
+
+						const categories = [ document.getElementById("category").value ];
+
+						const instructions = Array.from(document.querySelectorAll("#instructionsList .item-text")).reduce((obj, el, index) => {
+							obj[index] = el.textContent.trim();
+							return obj;
+						}, {});
+
+						const ingredients = Array.from(document.querySelectorAll("#ingredientsList .item-text")).map(el => ({
+							name: el.textContent.trim()
+						}));
+
+						const additionalInfo = document.getElementById("additionalInfo").value;
+
+						const recipe = {
+							name: name,
+							description: description,
+							prepareInMinutes: prepareInMinutes,
+							cookingMethod: cookingMethod,
+							categories: categories,
+							instructions: instructions,
+							ingredients: ingredients,
+							additionalInfo: additionalInfo
+						};
+
+						if ( recipe.ingredients.length == 0 ){
+							document.getElementById("add-recipe-response").innerHTML = "Adicione ao menos um ingrediente";
+							document.getElementById("add-recipe-response").style.display = 'block';
+						} else if ( Object.keys(recipe.instructions).length == 0 ){
+							document.getElementById("add-recipe-response").innerHTML = "Adicione ao menos uma instrução";
+							document.getElementById("add-recipe-response").style.display = 'block';
+						} else {
+							fetch('/receitas', {
+								method: 'PUT',
+								headers: {
+									'Content-Type': 'application/json'
+								},
+								body: JSON.stringify(recipe)
+							})
+								.then(response => {
+									if (response.ok) {
+										return response.json().then( res => res.message );  // Assuming the response contains the recipe ID as a string
+									} else {
+										throw new Error('Error');
+									}
+								})
+								.then(recipeId => {
+									window.location.href = `/receitas/${recipeId}`;
+								})
+								.catch(error => {
+									document.getElementById('add-recipe-response').innerHTML = 'Error';
+									document.getElementById('add-recipe-response').style.display = 'Block';
+								});
+
+						}
+
+
+					});
+
+				</script>
 
 
 			</div><!-- /row -->
@@ -57,37 +211,23 @@
 
 <style>
 
-.btn-favorite-true {
-	background-color: #eb5353;
-	padding: 5px;
-	border-radius: 5px;
-	color: white;
-	border: none;
+textarea{
+	max-width: 100%;
 }
 
-.btn-favorite-false {
-	background-color: #006ec0;
-	padding: 5px;
-	border-radius: 5px;
-	color: white;
-	border: none;
-}
-
-.recipe-details{
+#instructionsList{
 	display: flex;
-	flex-direction: row;
+	flex-direction: column;
+	flex-wrap: wrap;
 	gap: 5px;
-	<!-- background-color: #e7e7e7; -->
-	padding: 10px;
-	color: black;
-	border-radius: 60px;
-	width: fit-content;
+	margin-bottom: 1em;
 }
 
-.center{
+#ingredientsList{
 	display: flex;
-	align-items: center;
-	justify-content: center;
+	gap: 5px;
+	flex-wrap: wrap;
+	margin-bottom: 1em;
 }
 
 </style>

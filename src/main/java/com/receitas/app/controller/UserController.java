@@ -63,7 +63,12 @@ public class UserController {
 
 
 	public void getFavoritesPage( Context context ){
-		context.render("user_favorites.html");
+		if (context.attribute("userData") != null){
+			context.render("user_favorites.html");
+		} else {
+			context.redirect("/");
+		}
+
 	}
 
 	public void saveFavoriteRecipe( Context context ){

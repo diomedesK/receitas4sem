@@ -322,6 +322,15 @@ bt {
 	display: none;
 }
 
+.response-box{
+    border-radius: 5px;
+    text-align: center;
+    padding: 10px;
+    background-color: #f06767;
+    color: white;
+	display: none;
+}
+
 #non-logged-stuff{
 	display: none;
 }

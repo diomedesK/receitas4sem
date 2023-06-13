@@ -1,7 +1,7 @@
 <div>
 	<!-- Static navbar -->
 	<div class="navbar no-vertical-padding navbar-inverse navbar-static-top">
-		<div class="container" >
+		<div class="container" style="display: flex; flex-direction: column; align-items: center" >
 
 			<div class="navbar-header">
 				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
@@ -15,9 +15,14 @@
 
 			<div class="navbar-collapse collapse">
 
-				<ul class="nav navbar-nav navbar-right" style="display: flex; flex-wrap: wrap; align-items: center; gap: 5px;">
+				<ul class="nav navbar-nav navbar-right" style="display: flex; flex-wrap: wrap; align-items: center; gap: 4px;">
 
-					<li th:unless="${recipe} or ${#strings.startsWith(#httpServletRequest.getRequestURI(), '/perfil/')} and ${#strings.contains(#httpServletRequest.getRequestURI(), '/favoritos')}" class="input-group" id="search-bar" style="padding-inline: 5px" >
+					<li th:unless="${recipe or 
+								   #strings.startsWith(#httpServletRequest.getRequestURI(), '/perfil/') or
+								   #strings.contains(#httpServletRequest.getRequestURI(), '/favoritos/') or
+								   #strings.startsWith(#httpServletRequest.getRequestURI(), '/novareceita')}" 
+								   class="input-group" id="search-bar" style="padding-inline: 5px">
+
 						<div class="form-outline" style="width: 100%;">
 							<input type="search" placeholder="Bolo de cenoura" id="search-input" class="form-control" style="border-radius: 5px;"/>
 						</div>
@@ -28,6 +33,7 @@
 					</li>
 
 					<li th:if="${userData}"><span style="color: white" th:text="'Olá, ' + ${userData.name}"> </span></li>
+					<li th:if="${userData}"><a th:href="@{'/novareceita'}">Nova receita</a></li>
 					<li th:if="${userData}"><a th:href="@{'/perfil/' + ${userData.id} + '/favoritos/'}">Favoritos</a></li>
 					<li th:if="${userData}"><a th:href="@{/sair}">Sair</a></li>
 
