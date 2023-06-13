@@ -28,25 +28,31 @@ import com.receitas.app.utils.MyLogger;
 public class UserServiceTest {
 
     private static UserService userService = UserService.getInstance();
-
-	private static RecipeModel sampleRecipe;
+	private static String sampleRecipeID;
 
 	private static String addedUserFromJSONID;
-
 	private static String userJSON = "{\"name\":\"John\",\"username\":\"jonjohny\",\"email\":\"john@mail.com\", \"password\":\"password123\", \"favoritedRecipes\":[]}";
+
+    public static String getAUserIDForTesting() {
+        ServiceAPIResponse response = userService.registerNewUserFromJSON(userJSON);
+		return response.message;
+    }
+
+    public static void deleteUserByIDForTesting( String id ) {
+		userService.deleteUserByID(id);
+    }
 
     @BeforeAll
     public static void setUp() {
-		sampleRecipe = RecipeDAO.getInstance().getRandomRecipeForTesting();
-
     }
-
 
     @AfterAll
 	@Test
     public static void deleteUserByID() {
         ServiceAPIResponse response = userService.deleteUserByID(addedUserFromJSONID);
         Assertions.assertEquals(202, response.status);
+
+		RecipeServiceTest.deleteRecipeByIDForTesting(sampleRecipeID);
     }
 
     @Test
@@ -56,6 +62,7 @@ public class UserServiceTest {
         Assertions.assertEquals(201, response.status);
 
 		addedUserFromJSONID = response.message;
+		sampleRecipeID = RecipeServiceTest.getARecipeIDForTesting( addedUserFromJSONID );
     }
 
     @Test
@@ -87,6 +94,7 @@ public class UserServiceTest {
     }
 
     @Test
+	@Order(6)
     public void testGetUserFavoriteRecipes() {
         Optional<List<RecipeModel>> recipes = userService.getUserFavoriteRecipes(addedUserFromJSONID);
         Assertions.assertTrue(recipes.isPresent());
@@ -94,7 +102,7 @@ public class UserServiceTest {
 
     @Test
     public void testSaveRecipeAsFavorite() {
-        String recipeID = sampleRecipe.getID();
+        String recipeID = sampleRecipeID;
         ServiceAPIResponse response = userService.saveRecipeAsFavorite(recipeID, addedUserFromJSONID);
 
         Assertions.assertEquals(200, response.status);
@@ -102,7 +110,7 @@ public class UserServiceTest {
 
     @Test
     public void testRemoveRecipeFromFavorites() {
-        String recipeID = sampleRecipe.getID();
+        String recipeID = sampleRecipeID;
         ServiceAPIResponse response = userService.removeRecipeFromFavorites(recipeID, addedUserFromJSONID);
 
         Assertions.assertEquals(200, response.status);

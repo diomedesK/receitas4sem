@@ -37,21 +37,6 @@ public class UserDAO extends MySQLDAO implements UserDAOInterface  {
         return instance;
     }
 
-	public UserModel getRandomUserForTesting(){
-        try( PreparedStatement statement = connection.prepareStatement("SELECT * from users limit 1"); ){
-			
-            ResultSet resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                UserModel user = createUserFromResultSet(resultSet);
-                return user;
-            } 
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-		return new UserModel();
-	}
-
 	@Override
     public Optional<List<RecipeModel>> getUserFavoriteRecipes(String userID) {
 		try ( PreparedStatement statement = connection.prepareStatement("SELECT * FROM favorite_user_recipes WHERE user_id = ?"); ) {

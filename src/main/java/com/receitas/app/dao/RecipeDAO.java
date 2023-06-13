@@ -100,21 +100,6 @@ public class RecipeDAO extends MySQLDAO implements RecipeDAOInterface {
 		return recipe;
 	}
 
-    public RecipeModel getRandomRecipeForTesting() {
-        try ( PreparedStatement statement = connection.prepareStatement("SELECT * FROM recipes limit 1")) {
-            ResultSet resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-				return  createRecipeFromResultSet(resultSet) ;
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return new RecipeModel();
-
-    }
-
 	public List<RecipeModel> getManyRecipes(int count) {
 		List<RecipeModel> recipes = new ArrayList<>();
 		try ( PreparedStatement statement = connection.prepareStatement( "SELECT * FROM recipes ORDER BY RAND() LIMIT ?");) {

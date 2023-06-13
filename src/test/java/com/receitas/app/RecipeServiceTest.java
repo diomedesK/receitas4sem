@@ -20,33 +20,38 @@ import com.receitas.app.service.ServiceAPIResponse;
 
 public class RecipeServiceTest {
 
-    private static RecipeService recipeService;
+    public static RecipeService recipeService = RecipeService.getInstance();
 
-	public static RecipeModel sampleRecipe;
-	public static UserModel sampleUser;
+	public static String addedRecipeFromJSONID;
+	public static String sampleUserID;
 
-	private static String recipeJSON;
-	private static String addedRecipeFromJSONID;
+	public static String getRecipeJSON( String authorID ){
+		return String.format( "{ \"name\": \"My Cake\", \"authorID\": \"%s\", \"description\": \"Delicious chocolate cake recipe\", \"prepareInMinutes\": 60, \"cookingMethod\": \"Baking\", \"categories\": [ \"Cakes\", \"Sweet\" ], \"instructions\": { \"0\": \"Prehea at the oven to 350°F\", \"1\": \"Mix the dry ingredients in a bowl\", \"2\": \"Combine the wet ingredients in another bowl\" }, \"accessesWithinLast7Days\": 0, \"ratings\": { \"1\": 5, \"2\": 4 }, \"ingredients\": [ { \"name\": \"wheat\" }, { \"name\": \"milk\" } ] }", authorID  );
+	}
 
+    public static String getARecipeIDForTesting( String authorID ) {
+		String recipeID = recipeService.addRecipeFromJSON( getRecipeJSON(authorID) ).message;
+		return recipeID;
+    }
+
+    public static void deleteRecipeByIDForTesting( String id ) {
+		recipeService.deleteRecipeByID(id);
+    }
 
     @BeforeAll
 	public static void setUp() {
-		recipeService = RecipeService.getInstance();
-		sampleRecipe = RecipeDAO.getInstance().getRandomRecipeForTesting();
-		sampleUser = UserDAO.getInstance().getRandomUserForTesting();
-
-		recipeJSON = "{ \"name\": \"Asuka Cake\", \"authorID\": \"" + sampleUser.getID() + "\", \"description\": \"Delicious chocolate cake recipe\", \"prepareInMinutes\": 60, \"cookingMethod\": \"Baking\", \"categories\": [ \"asukaNotThere\", \"asukaNotThere2\" ], \"instructions\": { \"0\": \"Preheat asuka at the oven to 350°F\", \"1\": \"Mix the dry asuka ingredients in a bowl\", \"2\": \"Combine the asuka wet ingredients in another bowl\" }, \"accessesWithinLast7Days\": 0, \"ratings\": { \"1\": 5, \"2\": 4 }, \"ingredients\": [ { \"name\": \"asuka\" }, { \"name\": \"ray\" } ] }";
-
+		sampleUserID = UserServiceTest.getAUserIDForTesting();
 	}
 
 	@AfterAll
 	public static void clearAddedJSONRecipe(){
 		recipeService.deleteRecipeByID(addedRecipeFromJSONID);
+		UserServiceTest.deleteUserByIDForTesting(sampleUserID);
 	}
 
     @Test
     public void testAddRecipeFromJSON() {
-		ServiceAPIResponse res = recipeService.addRecipeFromJSON(recipeJSON);
+		ServiceAPIResponse res = recipeService.addRecipeFromJSON( getRecipeJSON(sampleUserID) );
         boolean added = res.status == 201;
 		Assertions.assertTrue(added);
 		
@@ -55,7 +60,7 @@ public class RecipeServiceTest {
 
     @Test
     public void testGetRecipeByID() {
-		String recipeID = sampleRecipe.getID();
+		String recipeID = addedRecipeFromJSONID;
 
         Optional<RecipeModel> recipe = recipeService.getRecipeByID(recipeID);
         Assertions.assertTrue(recipe.isPresent());
@@ -102,8 +107,8 @@ public class RecipeServiceTest {
         int rating = 5;
 
         boolean added = recipeService.addRating(
-				sampleRecipe.getID(),
-				sampleUser.getID(),
+				addedRecipeFromJSONID,
+				sampleUserID,
 				rating
 				);
         Assertions.assertTrue(added);

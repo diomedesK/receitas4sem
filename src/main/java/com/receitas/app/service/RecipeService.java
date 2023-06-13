@@ -114,7 +114,7 @@ public class RecipeService {
 		} catch( RuntimeException e) {
 			if ( e.getCause() instanceof java.sql.SQLIntegrityConstraintViolationException ){
 				/* There should be handling for specific situations where
-				 * the provided author is unxistent, for example */
+				 * the provided author is unxistent, for example  TODO*/
 				return new ServiceAPIResponse(e.getCause().getMessage(), 400);
 
 			} else {

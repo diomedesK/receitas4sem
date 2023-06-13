@@ -1,7 +1,5 @@
--- create database if not exists receitas4ADSTeste;
-
-drop database if exists receitas4ADSTeste;
-create database receitas4ADSTeste;
+-- drop database if exists receitas4ADSTeste;
+create database if not exists receitas4ADSTeste;
 
 use receitas4ADSTeste;
 
@@ -125,57 +123,3 @@ CREATE TABLE IF NOT EXISTS recipe_rating (
 
 );
 
--- Add some values
-
-INSERT IGNORE INTO users (name, username, email, hashed_password)
-VALUES
-('John Doe', 'johndoe', 'johndoe@example.com', 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f'),
-('Jane Smith', 'janesmith', 'janesmith@example.com', 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f'),
-('Mike Johnson', 'mikejohnson', 'mikejohnson@example.com', 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f');
--- All passwords are 'password123'
-
-
-INSERT IGNORE INTO recipes (name, author_id, description, prepare_in_minutes, cooking_method)
-VALUES
-('Chocolate Cake', '1', 'Delicious chocolate cake recipe', 60, 'Baking'),
-('Chicken Stir-Fry', '2', 'Healthy chicken stir-fry recipe', 30, 'Stir-Frying'),
-('Spaghetti Bolognese', '3', 'Classic spaghetti Bolognese recipe', 45, 'Boiling');
-
-INSERT IGNORE INTO favorite_user_recipes (user_id, recipe_id)
-VALUES
--- ('1', '1'),
-('1', '2'),
-('2', '1'),
-('3', '2');
-
-INSERT IGNORE INTO categories (name) VALUES
-('Sweet'),
-('Animal'),
-('Family');
-
-INSERT IGNORE INTO recipe_category (category_id, recipe_id) VALUES
-('1', '1'),
-('1', '2'),
-('2', '2'),
-('3', '3');
-
-INSERT IGNORE INTO ingredients(name) VALUES 
-('Flour'), ('Sugar'), ('Chicken'), ('Bell Pepers'), ('Pasta'), ('Pancetta');
-
-INSERT IGNORE INTO recipe_ingredient (recipe_id, ingredient_id ) VALUES 
-('1', '1'),
-('1', '2'),
-('2', '3'),
-('2', '4'),
-('3', '5'),
-('3', '6');
-
-INSERT IGNORE INTO recipe_rating ( recipe_id, user_id, rating ) VALUES
-('1', '1', 10),
-('1', '2', 9);
-
--- Search recipes by ingredient
--- SELECT r.* FROM ( ( recipes r JOIN recipe_ingredient ri ON r.id = ri.recipe_id ) JOIN ingredients i ON ri.ingredient_id = i.id ) WHERE i.name LIKE "%pasta%"
-
--- Search recipes by category
--- SELECT r.* FROM ( ( recipe_category rc join recipes r on rc.recipe_id = r.id) join categories c on rc.category_id = c.id ) where r.name LIKE "%cake%";
