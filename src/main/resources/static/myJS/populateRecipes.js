@@ -14,6 +14,7 @@ function populateRecipesFromAPI( url, targetContainer ){
 						  <p class="no-margin">${recipe.description}</p>
 						  <p class="no-margin"> ${recipe.prepareInMinutes} minutos 🕛 </p>
 						  <p class="no-margin"> ${recipe.accessesWithinLast7Days} acesso(s) recentes 👁️ </p>
+						  <p class="no-margin"> ${recipe.averageRating} ⭐</p>
 
 						 <div>
 						   ${recipe.categories.slice(0, 3).map((category, index) => `${category}${index !== recipe.categories.length - 1 ? ', ' : ''}`).join('')}

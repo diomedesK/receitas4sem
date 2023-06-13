@@ -137,7 +137,16 @@ public class RecipeService {
     }
 
     public boolean addRating(String recipeID, String userID, int rating) {
-        return recipeDAO.addRating(recipeID, userID, rating);
+		if ( rating >= 0 && rating <= 5 ){
+			return recipeDAO.addRating(recipeID, userID, rating);
+		} else {
+			return false;
+		}
+
+    }
+
+    public Optional<Integer> getRating(String recipeID, String userID) {
+        return recipeDAO.getRating(recipeID, userID);
     }
 
     public boolean addAccess(String recipeID) {

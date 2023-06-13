@@ -57,16 +57,13 @@
 	const signUpForm = document.getElementById('signUpForm');
 
 	signUpForm.addEventListener("submit", async (e) => {
-	console.log(e);
 	  e.preventDefault();
 
-	  // Get the form fields
 	  const nameField = document.getElementById('name');
 	  const usernameField = document.getElementById('username');
 	  const emailField = document.getElementById('email');
 	  const passwordField = document.getElementById('password');
 
-	  // Construct the JSON payload
 	  const payload = {
 		name: nameField.value,
 		username: usernameField.value,
@@ -85,7 +82,6 @@
 
 		if (response.ok) {
 		  const data = await response.json();
-		  console.log(data); // Print the response data to the console
 		  window.location.href = "/acesso" // TODO session-token is not received in a cookie
 		} else if (response.status === 400){
 			const data = await response.json();

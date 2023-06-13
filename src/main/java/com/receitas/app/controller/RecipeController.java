@@ -11,6 +11,7 @@ import com.receitas.app.service.UserService;
 import com.receitas.app.service.ServiceAPIResponse;
 
 import com.receitas.app.model.RecipeModel;
+import com.receitas.app.model.UserModel;
 
 import com.receitas.app.utils.MyLogger;
 
@@ -31,10 +32,8 @@ public class RecipeController {
     }
 
 	public void getRecipePage(Context context) {
-		// Retrieve your data model, for example:
-		
 		String recipeID = context.pathParam("id");
-		RecipeModel recipe = RecipeService.getInstance().getRecipeByID( recipeID ).get();
+		RecipeModel recipe = recipeService.getRecipeByID( recipeID ).get();
 
 		if (recipe != null) {
 			recipeService.clearAccessesOfRecipeFromDaysAgo(recipeID, 7);
@@ -42,15 +41,20 @@ public class RecipeController {
 			
 			context.attribute("recipe", recipe);
 			if (context.attribute("userData") != null){
+				UserModel user = context.attribute("userData");
 				boolean wasRecipeFavorited = userService.hasUserFavoritedRecipeFromSessionToken( context.cookie("session-token"), recipeID );
 				context.attribute("wasRecipeFavorited", wasRecipeFavorited);
-				System.out.println(wasRecipeFavorited);;
+
+				Optional<Integer> userRating = recipeService.getRating(recipeID, user.getID() );
+				if(userRating.isPresent()){
+					context.attribute("userRating", userRating.get());
+				}
+
 			}
 
 			context.render("recipe.html");
 
 		} else {
-			// Handle the case when the recipe is not found
 			context.status(404);
 		}
 
@@ -120,7 +124,7 @@ public class RecipeController {
         Optional<RecipeModel> recipe = recipeService.getRecipeByID(recipeID);
 
 		if ( recipe.isPresent() ){
-			context.json(recipe);
+			context.json(recipe.get());
 		} else {
 			context.status(404);
 		}
@@ -155,6 +159,7 @@ public class RecipeController {
 		if ( userID.isPresent() ){
 			ServiceAPIResponse r = recipeService.addRecipeFromJSON( context.body(), userID.get() );
 			context.status( r.status ).json(r);
+			return;
 		} else {
 			context.status(403);
 			return;
@@ -162,7 +167,26 @@ public class RecipeController {
     }
 
 	public void addRecipeRating(Context context){
-		// Optional<String> userID = userService.getUserIDBySessionToken( context.cookie("session-token") );
+		UserModel user = context.attribute("userData");
+		String recipeID = context.pathParam("id");
+		try {
+			int rating = Integer.parseInt(context.queryParam("nota"));
+			if( user != null  ){
+				boolean success = recipeService.addRating(recipeID, user.getID(), rating);
+				if(success == true){
+					context.status(200);
+					return;
+				}
+			}
+		} catch(Exception e){
+			e.printStackTrace();
+		}
+
+		context.status(403);
+	}
+
+	public void removeUserRating(Context context){
+		Optional<String> userID = userService.getUserIDBySessionToken( context.cookie("session-token") );
 		context.status(404);
 	}
 

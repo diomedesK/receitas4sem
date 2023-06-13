@@ -27,24 +27,74 @@
 
 							<div class="recipe-details">
 								<p  class="no-margin">  <span> 🕛 </span> <span th:text="${recipe.prepareInMinutes}"></span> minutos </p>
-								<p  class="no-margin"> 🍳 Modo de preparo: <span th:text="${recipe.cookingMethod}"></span> </p>
+								<p  class="no-margin"> <span> 🍳 Modo de preparo: </span><span th:text="${recipe.cookingMethod}"></span> </p>
+								<p  class="no-margin"> <span> ⭐ Avaliação média: </span> <span th:text="${recipe.averageRating}"></span> </p>
 							</div>
 						</div>
 
 					</div>
 
-					<div th:if="${userData}" style="align-self: end">
+					<div th:if="${userData}" style="align-self: end; display: flex; gap: 1em">
 
-					<button id="favoriteButton" type="button" style="padding: 5px;" 
+					<div id="rating-container">
+						<span class="star" data-value="1">&#9733;</span>
+						<span class="star" data-value="2">&#9733;</span>
+						<span class="star" data-value="3">&#9733;</span>
+						<span class="star" data-value="4">&#9733;</span>
+						<span class="star" data-value="5">&#9733;</span>
+					</div>
+
+					<script>
+						const ratingContainer = document.getElementById("rating-container");
+						const stars = ratingContainer.getElementsByClassName("star");
+
+						for (let i = 0; i < stars.length; i++) {
+							stars[i].addEventListener("click", function () {
+
+								const value = parseInt(this.getAttribute("data-value"));
+
+								for (let j = 0; j < stars.length; j++) {
+									if (j < value) {
+										stars[j].classList.add("active");
+									} else {
+										stars[j].classList.remove("active");
+									}
+								}
+
+								const recipeID = [[${recipe.id}]];
+								const rating = value;
+
+								const url = `/receitas/${recipeID}/avaliacoes?nota=${rating}`;
+								fetch(url, {
+									method: "PUT"
+								}).then(response => {
+										if (response.ok) {
+											console.log("Rating submitted successfully!");
+										} else {
+											console.log("Rating submission failed!");
+										}
+									})
+									.catch(error => {
+										console.error("An error occurred while submitting the rating:", error);
+									});
+
+							});
+
+						}
+
+					</script>
+
+
+					<button id="favoriteButton" type="button" style="padding: 10px;" 
 						th:class=" ${wasRecipeFavorited} ? 'btn-favorite-true' : 'btn-favorite-false'">
 						<span th:text="${wasRecipeFavorited} ? 'Remover favorito' : 'Favoritar'"></span>
 					</button>
 
 					<script>
+
 						function favoriteUnfavorite() {
 							var recipeId = [[${recipe.id}]]
 
-							// Toggle the isFavorited value
 							isFavorited = !isFavorited;
 							
 							var button = document.getElementById('favoriteButton');
@@ -54,41 +104,35 @@
 								button.classList.remove('btn-favorite-false');
 								button.textContent = 'Remover favorito';
 
-								// Send a POST request to add the favorite
 								fetch('/perfil/favoritos/' + recipeId, {
 									method: 'PUT'
 								}).then(response => {
-									// Handle the response
 								}).catch(error => {
-									// Handle the error
 								});
 							} else {
 								button.classList.add('btn-favorite-false');
 								button.classList.remove('btn-favorite-true');
 								button.textContent = 'Favoritar';
 
-								// Send a DELETE request to remove the favorite
 								fetch('/perfil/favoritos/' + recipeId, {
 									method: 'DELETE'
 
 								}).then(response => {
-									// Handle the response
 								}).catch(error => {
-									// Handle the error
 								});
 							}
 						}
 
 						document.getElementById("favoriteButton").addEventListener("click", (e) => favoriteUnfavorite())
 						var isFavorited = [[${wasRecipeFavorited}]]; 
-
 					</script>
+
 					</div>
 
 					<br>
 
 					<p  th:text="${recipe.description}"></p>
-
+					
 					<h3>Ingredientes:</h3>
 					<ul>
 						<li th:each="ingredient : ${recipe.ingredients}" th:text="${ingredient.name}"></li>
@@ -108,9 +152,6 @@
 
 					</div>
 
-
-
-					<!-- <p> <bt>TAGS: <a href="/#">Wordpress</a> - <a href="#">Web Design</a></bt> </p> -->
 					<ol>
 						<li th:each="category : ${categories}" th:href="${category}"></li>
 					</ol>
@@ -136,6 +177,25 @@
 
   </body>
 </html>
+
+
+<script>
+
+	/* Autofill the stars based on the receivev userRating variable */
+	const userRating = [[${userRating}]];
+
+	if ( userRating != null ){
+		const stars = ratingContainer.getElementsByClassName("star");
+		for (let j = 0; j < stars.length; j++) {
+			if (j < userRating) {
+				stars[j].classList.add("active");
+			} else {
+				stars[j].classList.remove("active");
+			}
+		}
+	}
+
+</script>
 
 <style>
 
@@ -170,6 +230,17 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
+}
+
+.star {
+  font-size: 24px;
+  cursor: pointer;
+  color: gray;
+}
+
+.star:hover,
+.star.active {
+  color: gold;
 }
 
 </style>

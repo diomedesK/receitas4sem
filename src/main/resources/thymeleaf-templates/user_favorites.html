@@ -34,10 +34,11 @@
 								<h3 th:text="${recipe.name}"></h3>
 							</a>
 							<p class="no-margin"  th:text="${recipe.description}"</p>
-							<p class="no-margin"  th:text="${recipe.prepareInMinutes} + 'minutos 🕛'"</p>
-							<p class="no-margin"  th:text="${recipe.accessesWithinLast7Days} + 'acesso(s) recentes 👁️'"</p>
-						</div>
+							<p class="no-margin"  th:text="${recipe.prepareInMinutes} + ' minutos 🕛'"</p>
+							<p class="no-margin"  th:text="${recipe.accessesWithinLast7Days} + ' acesso(s) recentes 👁️'"</p>
+							<p  class="no-margin"> <span> ⭐ Avaliação média: </span> <span th:text="${recipe.averageRating}"></span> </p>
 
+						</div>
 
 					</div>
 

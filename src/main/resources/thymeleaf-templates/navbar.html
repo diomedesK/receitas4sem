@@ -70,7 +70,6 @@
 
 
 <script>
-	// Get the input element and button
 	const input = document.getElementById('search-input');
 	const button = document.getElementById('search-btn');
 
@@ -88,15 +87,17 @@
 		window.populateRecipesFromURLParams();
 	}
 
-	// Add event listener for button click
-	button.addEventListener('click', handleSearch);
+	try{
+		button.addEventListener('click', handleSearch);
+		input.addEventListener('keydown', (event) => {
+			if (event.key === 'Enter') {
+				handleSearch();
+			}
+		});
 
-	// Add event listener for Enter key press
-	input.addEventListener('keydown', (event) => {
-		if (event.key === 'Enter') {
-			handleSearch();
-		}
-	});
+	} catch( e ){
+
+	}
 
 </script>
 

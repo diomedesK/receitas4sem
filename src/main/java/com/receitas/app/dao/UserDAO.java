@@ -132,17 +132,6 @@ public class UserDAO extends MySQLDAO implements UserDAOInterface  {
 	public boolean deleteUserByID( String userID ){
 
 		String[] neededStatements = {
-			/*
-			"DELETE FROM recipe_rating WHERE recipe_id IN (SELECT id FROM recipes WHERE author_id = ?);",
-			"DELETE FROM favorite_user_recipes WHERE user_id = ?;",
-			"DELETE FROM recipe_ingredient WHERE recipe_id IN (SELECT id FROM recipes WHERE author_id = ?);",
-			"DELETE FROM recipe_category WHERE recipe_id IN (SELECT id FROM recipes WHERE author_id = ?);",
-			"DELETE FROM recipe_instructions WHERE recipe_id IN (SELECT id FROM recipes WHERE author_id = ?)",
-			"DELETE FROM recipe_accesses WHERE recipe_id IN (SELECT id FROM recipes WHERE author_id = ?)",
-			"DELETE FROM recipes WHERE author_id = ?;",
-			"DELETE FROM recipes WHERE author_id = ?;",
-			"DELETE FROM sessions WHERE user_id = ?;",
-			*/
 			"DELETE FROM users WHERE id = ?;"
 		};
 

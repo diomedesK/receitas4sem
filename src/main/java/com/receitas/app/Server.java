@@ -1,7 +1,5 @@
 package com.receitas.app;
 
-import java.util.Map;
-import java.util.HashMap;
 import java.util.Optional;
 import java.io.InputStream;
 
@@ -45,16 +43,13 @@ public class Server {
 		RecipeController recipeController = new RecipeController(RecipeService.getInstance(), UserService.getInstance());
 
 		Javalin app = Javalin.create(config -> {
-			// add static file folder
 			config.addStaticFiles("/static");
 
-			// Add live request logging
 			config.requestLogger((ctx, ms) -> {
 				System.out.println(ctx.method() + " " + ctx.fullUrl());
 				System.out.println(ms + " ms");
 			});
 
-			// set the thymeleaf as the rendering engine 
 			JavalinRenderer.register(JavalinThymeleaf.INSTANCE);
 			JavalinThymeleaf.configure(
 					// set the default template engine as HTML, using 'public/thymeleaf-templates/' as the source folder for .html files
@@ -87,8 +82,9 @@ public class Server {
 
 			put("/receitas", recipeController::addRecipeJSON);
 			get("/receitas/:id", recipeController::getRecipePage); // also handles query params
-			put("/receitas/:id/avaliacoes", recipeController::addRecipeRating);
 			delete("/receitas/:id", recipeController::deleteRecipe);
+
+			put("/receitas/:id/avaliacoes", recipeController::addRecipeRating);
 
 			get("/api/receitas", recipeController::getRecipes); // also handles to query params
 			get("/api/receitas/popular", recipeController::getPopularRecipes); // also handles to query params

@@ -298,12 +298,6 @@ public class RecipeDAO extends MySQLDAO implements RecipeDAOInterface {
 		MyLogger.info("Deleting recipe of ID " + id);
 
 		String[] neededStatements = {
-			/* "DELETE FROM recipe_instructions WHERE recipe_id = ?",
-			"DELETE FROM recipe_rating WHERE recipe_id = ?",
-			"DELETE FROM recipe_ingredient WHERE recipe_id = ?",
-			"DELETE FROM recipe_category WHERE recipe_id = ?",
-			"DELETE FROM recipe_accesses WHERE recipe_id = ?",
-			"DELETE FROM favorite_user_recipes WHERE recipe_id = ?", */
 			"DELETE FROM recipes WHERE id = ?"
 		};
 
@@ -425,12 +419,11 @@ public class RecipeDAO extends MySQLDAO implements RecipeDAOInterface {
     }
 
 	public boolean addRating(String recipeID, String userID, int rating) {
-		try ( PreparedStatement statement = connection.prepareStatement("INSERT INTO `recipe_rating`(`recipe_id`, `user_id`, `rating`) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE rating=? ")){
+		try ( PreparedStatement statement = connection.prepareStatement("INSERT INTO `recipe_rating`(`recipe_id`, `user_id`, `rating`) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE rating=VALUES(rating) ")){
 
 			statement.setString(1, recipeID);
 			statement.setString(2, userID);
 			statement.setInt(3, rating);
-			statement.setInt(4, rating);
 
 			int rowsAffected = statement.executeUpdate();
 
@@ -441,6 +434,26 @@ public class RecipeDAO extends MySQLDAO implements RecipeDAOInterface {
 		}
 
 		return false;
+	}
+
+	public Optional<Integer> getRating(String recipeID, String userID) {
+		try ( PreparedStatement statement = connection.prepareStatement("SELECT rating from recipe_rating where recipe_id = ? and user_id = ?")){
+
+			statement.setString(1, recipeID);
+			statement.setString(2, userID);
+
+			ResultSet res = statement.executeQuery();
+
+			if( res.next() ){
+				int rating = res.getInt("rating");
+				return Optional.of(rating);
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return Optional.empty();
 	}
 
 
