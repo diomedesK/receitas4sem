@@ -1,7 +1,7 @@
--- drop database if exists receitas4ADSTeste;
-create database if not exists receitas4ADSTeste;
+-- drop database if exists receitas4ADS;
+create database if not exists receitas4ADS;
 
-use receitas4ADSTeste;
+use receitas4ADS;
 
 CREATE TABLE IF NOT EXISTS users (
 	id int NOT NULL auto_increment,
