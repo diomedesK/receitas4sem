@@ -1,4 +1,4 @@
--- drop database if exists receitas4ADS;
+drop database if exists receitas4ADS;
 create database if not exists receitas4ADS;
 
 use receitas4ADS;
@@ -17,15 +17,12 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE TABLE IF NOT EXISTS sessions (
-	id INT NOT NULL AUTO_INCREMENT,
 	user_id INT NOT NULL,
-	session_id VARCHAR(100) NOT NULL,
+	session_token VARCHAR(100) NOT NULL,
 	expiration TIMESTAMP NOT NULL,
-	PRIMARY KEY (id),
 
-	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-
-	UNIQUE KEY (user_id)
+	PRIMARY KEY (user_id),
+	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS recipes (
@@ -45,11 +42,8 @@ CREATE TABLE IF NOT EXISTS recipes (
 );
 
 CREATE TABLE IF NOT EXISTS recipe_accesses (
-    id INT NOT NULL AUTO_INCREMENT,
     recipe_id INT NOT NULL,
     accessed_at DATETIME NOT NULL,
-
-    PRIMARY KEY (id),
 
     FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
 );

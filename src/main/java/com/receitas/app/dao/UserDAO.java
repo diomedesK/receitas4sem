@@ -195,7 +195,7 @@ public class UserDAO extends MySQLDAO implements UserDAOInterface  {
 	}
 
 	public boolean hasUserFavoritedRecipeFromSessionToken( String sessionToken, String recipeID ){
-		try( PreparedStatement statement = connection.prepareStatement("SELECT COUNT(1) as c FROM  ( favorite_user_recipes f join sessions s on f.user_id = s.user_id ) where s.session_id = ?  and  f.recipe_id = ?") ){
+		try( PreparedStatement statement = connection.prepareStatement("SELECT COUNT(1) as c FROM  ( favorite_user_recipes f join sessions s on f.user_id = s.user_id ) where s.session_token = ?  and  f.recipe_id = ?") ){
 			statement.setString(1, sessionToken);
 			statement.setString(2, recipeID);
 			
@@ -213,7 +213,7 @@ public class UserDAO extends MySQLDAO implements UserDAOInterface  {
 
 
 	public Optional<UserModel> getUserDataFromSessionToken( String token ){
-		try( PreparedStatement statement = connection.prepareStatement("select u.* from ( sessions s join users u on s.user_id = u.id ) where session_id = ? and expiration > now()") ){
+		try( PreparedStatement statement = connection.prepareStatement("select u.* from ( sessions s join users u on s.user_id = u.id ) where session_token = ? and expiration > now()") ){
 			statement.setString(1, token);
 			
 			ResultSet resultSet = statement.executeQuery();
@@ -233,7 +233,7 @@ public class UserDAO extends MySQLDAO implements UserDAOInterface  {
 	}
 
 	public Optional<String> getUserIDBySessionToken( String token ){
-		try( PreparedStatement statement = connection.prepareStatement("select user_id from sessions where session_id = ? and expiration > now()") ){
+		try( PreparedStatement statement = connection.prepareStatement("select user_id from sessions where session_token = ? and expiration > now()") ){
 			statement.setString(1, token);
 			
 			ResultSet resultSet = statement.executeQuery();
@@ -253,7 +253,7 @@ public class UserDAO extends MySQLDAO implements UserDAOInterface  {
 
 	public boolean saveUserSession( String userID, String sessionToken, LocalDateTime expirationTimestamp ){
 		try (PreparedStatement statement = connection.prepareStatement(
-					"INSERT INTO sessions (user_id, session_id, expiration) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE session_id = VALUES(`session_id`), expiration = VALUES(`expiration`)")) {
+					"INSERT INTO sessions (user_id, session_token, expiration) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE session_token = VALUES(`session_token`), expiration = VALUES(`expiration`)")) {
 			statement.setString(1, userID);
 			statement.setString(2, sessionToken);
 			statement.setTimestamp(3, Timestamp.valueOf(expirationTimestamp));
@@ -268,7 +268,7 @@ public class UserDAO extends MySQLDAO implements UserDAOInterface  {
 	}
 
 	public boolean removeUserSession( String sessionToken ){
-        try ( PreparedStatement statement = connection.prepareStatement("DELETE FROM sessions where session_id = ?");  ) {
+        try ( PreparedStatement statement = connection.prepareStatement("DELETE FROM sessions where session_token = ?");  ) {
             statement.setString(1, sessionToken);
             int rowsAffected = statement.executeUpdate();
 
