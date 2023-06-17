@@ -100,22 +100,6 @@ public class RecipeDAO extends MySQLDAO implements RecipeDAOInterface {
 		return recipe;
 	}
 
-	public List<RecipeModel> getManyRecipes(int count) {
-		List<RecipeModel> recipes = new ArrayList<>();
-		try ( PreparedStatement statement = connection.prepareStatement( "SELECT * FROM recipes ORDER BY RAND() LIMIT ?");) {
-			statement.setInt(1, count);
-
-			ResultSet resultSet = statement.executeQuery();
-			while (resultSet.next()) {
-				recipes.add( createRecipeFromResultSet( resultSet ));
-			}
-
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return recipes;
-	}
-
 	public boolean clearAccessesOfRecipeFromDaysAgo( String recipeID, int olderThanDays){
         try ( 
 				PreparedStatement clearAccessesStatement = connection.prepareStatement(
@@ -205,10 +189,28 @@ public class RecipeDAO extends MySQLDAO implements RecipeDAOInterface {
         return recipes;
     }
 
+	public List<RecipeModel> getRandomRecipes(int count){
+		List<RecipeModel> recipes = new ArrayList<>();
+
+		try (  PreparedStatement statement = connection.prepareStatement("SELECT * from recipes ORDER BY RAND() LIMIT ?") ) {
+			statement.setInt(1, count);
+			ResultSet resultSet = statement.executeQuery();
+
+			while (resultSet.next()) {
+				recipes.add( createRecipeFromResultSet( resultSet ));
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return recipes;
+
+	}
+
 	public List<RecipeModel> getPopularRecipes(int count) {
 		List<RecipeModel> recipes = new ArrayList<>();
 
-		try (  PreparedStatement statement = connection.prepareStatement("select r.* from ( ( SELECT recipe_id FROM recipe_accesses GROUP BY recipe_id ORDER BY COUNT(*) DESC LIMIT ? ) ra join recipes r on ra.recipe_id = r.id )") ) {
+		try (  PreparedStatement statement = connection.prepareStatement("SELECT * FROM ( ( SELECT recipe_id, COUNT(*) AS accesses FROM recipe_accesses GROUP BY recipe_id ORDER BY COUNT(*) DESC LIMIT ? ) ra JOIN recipes r ON ra.recipe_id = r.id ) ORDER BY accesses DESC") ) {
 			statement.setInt(1, count);
 			ResultSet resultSet = statement.executeQuery();
 

@@ -9,17 +9,16 @@ import java.io.InputStream;
  * */
 
 import io.javalin.Javalin;
-import io.javalin.http.Handler;
 import io.javalin.plugin.rendering.JavalinRenderer;
+import io.javalin.plugin.rendering.template.JavalinThymeleaf;
+
 import static io.javalin.apibuilder.ApiBuilder.put;
 import static io.javalin.apibuilder.ApiBuilder.get;
 import static io.javalin.apibuilder.ApiBuilder.post;
 import static io.javalin.apibuilder.ApiBuilder.delete;
-import io.javalin.plugin.rendering.template.JavalinThymeleaf;
 
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.templatemode.TemplateMode;
-import org.thymeleaf.context.Context;
 
 import com.receitas.app.service.UserService;
 import com.receitas.app.service.RecipeService;
@@ -51,10 +50,8 @@ public class Server {
 			});
 
 			JavalinRenderer.register(JavalinThymeleaf.INSTANCE);
-			JavalinThymeleaf.configure(
-					// set the default template engine as HTML, using 'public/thymeleaf-templates/' as the source folder for .html files
-					HTMLTemplateEngine
-					);
+			// set the default template engine as HTML, using 'public/thymeleaf-templates/' as the source folder for .html files
+			JavalinThymeleaf.configure( HTMLTemplateEngine);
 
 		}).start( getPort() );
 
@@ -72,8 +69,8 @@ public class Server {
 
 		app.routes(() -> {
 			get("/", (ctx) -> ctx.redirect("/home"));
-			get("/busca", homePageHandler);
-			get("/home", homePageHandler);
+			get("/home", recipeController::homePageHandler);
+			get("/busca", recipeController::getSearchPage);
 
 			get("/acesso", userController::accessPageHandler);
 			get("/cadastro", userController::signUpPageHandler);
@@ -109,43 +106,9 @@ public class Server {
 	}
 
 
-	private static final Handler homePageHandler = (ctx) -> {
-		ctx.render("index.html");
-	};
-
-
-	private static final Handler JS = (ctx) -> {
-		String jsFileName = ctx.pathParam("jsFile");
-		Context thymeleafCtx = new Context();
-		thymeleafCtx.setVariable("jsTest", "This string is from a JS file");
-		ResourceResponse resourceResponse = renderedFileAsStream(jsFileName, thymeleafCtx, TemplateMode.JAVASCRIPT);
-		sendResult(resourceResponse, "application/javascript", ctx);
-	};
-
-	private static final Handler CSS = (ctx) -> {
-		String cssFileName = ctx.pathParam("cssFile");
-		Context thymeleafCtx = new Context();
-		thymeleafCtx.setVariable("backgroundColor", "goldenrod");
-		ResourceResponse resourceResponse = renderedFileAsStream(cssFileName, thymeleafCtx, TemplateMode.CSS);
-		sendResult(resourceResponse, "text/css", ctx);
-	};
-
-	// read system variable PORT if defined otherwise defaults to 7777
 	private static int getPort(){
 		final String environmentDefinedPort = System.getenv("RECIPES_SERVER_PORT");
 		return environmentDefinedPort != null ? Integer.parseInt(environmentDefinedPort) : 7777;
-	}
-
-	// Finalizes the rendering based on the processed template stream (wrapped inside resourceResponse)
-	private static void sendResult(ResourceResponse resourceResponse, String contentType, io.javalin.http.Context ctx) {
-		ctx.contentType(contentType);
-		ctx.status(resourceResponse.getHttpStatus());
-		ctx.result(resourceResponse.getResponse());
-	}
-
-
-	private static ResourceResponse renderedFileAsStream(String templateName, Context thymeleafCtx, TemplateMode templateMode) {
-		return ThymeleafConfig.renderTemplate(templateName, thymeleafCtx, templateMode);
 	}
 
 }

@@ -13,9 +13,29 @@
 	  <link th:href="@{/assets/css/main.css}" rel="stylesheet">
 
 	  <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
-	  <script type="module" th:src="@{/myJS/populateRecipes.js}"></script>
-
   </head>
+
+  <div th:fragment="recipe-container">
+	  <div class="col-lg-6 col-lg-offset-3 centered mt-0">
+		  <h3 th:if="${title}" th:text="${title}"></h3>
+		  <hr>
+	  </div>
+
+	  <div class="recipe-container">
+		  <div class="recipe-card" th:each="recipe : ${recipes}">
+			  <a th:href="'/receitas/' + ${recipe.id}">
+				  <h3 th:text="${recipe.name}"></h3>
+			  </a>
+			  <p class="no-margin" th:text="${recipe.description}"></p>
+			  <p class="no-margin" th:text="${recipe.prepareInMinutes} + ' minutos 🕛'"></p>
+			  <p class="no-margin" th:text="${recipe.accessesWithinLast7Days} + ' acesso(s) recentes 👁️'"></p>
+			  <p class="no-margin">
+			  <span>⭐ Avaliação média: </span>
+			  <span th:text="${recipe.averageRating}"></span>
+			  </p>
+		  </div>
+	  </div>
+  </div>
 
 
 </html>

@@ -17,19 +17,16 @@
 
 				<ul class="nav navbar-nav navbar-right" style="display: flex; flex-wrap: wrap; align-items: center; gap: 4px;">
 
-					<li th:unless="${recipe or 
-								   #strings.startsWith(#httpServletRequest.getRequestURI(), '/perfil/') or
-								   #strings.contains(#httpServletRequest.getRequestURI(), '/favoritos/') or
-								   #strings.startsWith(#httpServletRequest.getRequestURI(), '/novareceita')}" 
-								   class="input-group" id="search-bar" style="padding-inline: 5px">
-
+					<li class="input-group" id="search-bar" style="padding-inline: 5px">
 						<div class="form-outline" style="width: 100%;">
 							<input type="search" placeholder="Bolo de cenoura" id="search-input" class="form-control" style="border-radius: 5px;"/>
 						</div>
 
-						<button id="search-btn" type="button" class="btn btn-primary" style="border-radius: 5px; padding: 0px; padding-inline: 5px;" >
+						<button id="search-btn" type="submit" class="btn btn-primary" style="border-radius: 5px; padding: 0px; padding-inline: 5px;" >
 							<span style="font-size: 20px;">🔍</span>
 						</button>
+
+
 					</li>
 
 					<li th:if="${userData}"><span style="color: white" th:text="'Olá, ' + ${userData.name}"> </span></li>
@@ -48,31 +45,30 @@
 
 </div>
 
-<style> 
-
-
-@media (min-width: 992px) { 
-	#search-bar{
-		width: 500px;
-	}
-}
-
-@media (max-width: 992px) { 
-	#white{
-		min-height: 480px;
-	}
-	#search-bar{
-		width: 300px;
-	}
-}
-
-</style>
 
 
 <script>
 	const input = document.getElementById('search-input');
 	const button = document.getElementById('search-btn');
 
+	function convertToQueryParams(text) {
+		const queryParams = {};
+		const filterPattern =/\b\w+:[\w:]+\b/g 
+		const matchesIterator = text.matchAll(filterPattern)
+
+		let nameParam = text.replace(filterPattern, "").trim()
+		if(nameParam.length > 0){
+			queryParams["nome"] = nameParam;
+		}
+
+		for( let match; match = matchesIterator.next(), match.done == false  ;  ){
+			let [ paramName, ...values ] = match.value[0].split(":")
+			queryParams[paramName] = values.join(":")
+		}
+
+		const urlParams = new URLSearchParams(queryParams);
+		return urlParams.toString();
+	}
 
 	function handleSearch() {
 		const searchText = input.value.trim();
@@ -81,10 +77,10 @@
 			return;
 		}
 
-		const url = `/busca?q=${encodeURIComponent(searchText)}`;
-		history.pushState({}, `Busca por "${searchText}"`, url);
+		const queryParams = convertToQueryParams(searchText);
 
-		window.populateRecipesFromURLParams();
+		const url = '/busca?' + queryParams;
+		window.location.href = url;
 	}
 
 	try{
@@ -100,4 +96,5 @@
 	}
 
 </script>
+
 

@@ -41,7 +41,7 @@ public class UserController {
 	public void accessPageHandler( Context context ){
 		// logged users shouldnt access
 		if (context.attribute("userData") == null){
-			context.render("access.html");
+			context.render("accessPage.html");
 		} else {
 			context.redirect("/");
 		}
@@ -49,7 +49,7 @@ public class UserController {
 
 	public void signUpPageHandler(  Context context  ){
 		if (context.attribute("userData") == null){
-			context.render("signup.html");
+			context.render("signupPage.html");
 		} else {
 			context.redirect("/");
 	};
@@ -64,7 +64,7 @@ public class UserController {
 
 	public void getFavoritesPage( Context context ){
 		if (context.attribute("userData") != null){
-			context.render("user_favorites.html");
+			context.render("userFavoritesPage.html");
 		} else {
 			context.redirect("/");
 		}

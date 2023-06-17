@@ -3,8 +3,6 @@ package com.receitas.app.service;
 import com.receitas.app.dao.RecipeDAO;
 import com.receitas.app.model.RecipeModel;
 
-import com.receitas.app.service.ServiceAPIResponse;
-
 import java.util.Optional;
 import java.util.List;
 
@@ -12,8 +10,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.core.JsonProcessingException;
-
-import com.receitas.app.utils.MyLogger;
 
 
 public class RecipeService {
@@ -41,8 +37,12 @@ public class RecipeService {
 	}
 
 
-	public List<RecipeModel> getManyRecipes( int count ){
-		return recipeDAO.getManyRecipes(count);
+	public List<RecipeModel> getPopularRecipes( int count ){
+		return recipeDAO.getPopularRecipes(count);
+	}
+
+	public List<RecipeModel> getRandomRecipes( int count ){
+		return recipeDAO.getRandomRecipes(count);
 	}
 
     public Optional<RecipeModel> getRecipeByID(String recipeID) {
@@ -51,10 +51,6 @@ public class RecipeService {
 
     public List<RecipeModel> getRecipesByAuthorID(String authorID) {
         return recipeDAO.getRecipesByAuthorID(authorID);
-    }
-
-    public List<RecipeModel> getPopularRecipes() {
-        return recipeDAO.getPopularRecipes(4);
     }
 
     public List<RecipeModel> getRecipesByName(String recipeName) {
