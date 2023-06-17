@@ -36,7 +36,7 @@ VALUES (1, NOW()),
        (12, NOW());
 
 -- Insert recipe instructions
-INSERT INTO recipe_instructions (recipe_id, instruction_step, instruction_description)
+INSERT INTO recipe_instructions (recipe_id, step, description)
 VALUES (1, 1, 'Step 1: Preheat the oven to 350°F'),
        (1, 2, 'Step 2: Mix the dry ingredients'),
        (1, 3, 'Step 3: Combine wet and dry ingredients');

@@ -69,7 +69,7 @@ public class RecipeDAO extends MySQLDAO implements RecipeDAOInterface {
 		ResultSet recipeRatings = getRecipeRatings.executeQuery();
 
 		// Get instructions
-		PreparedStatement getRecipeInstructions = connection.prepareStatement("select instruction_step, instruction_description from recipe_instructions where recipe_id = ?");
+		PreparedStatement getRecipeInstructions = connection.prepareStatement("select step, description from recipe_instructions where recipe_id = ?");
 		getRecipeInstructions.setString(1, recipe.getID());
 		ResultSet recipeInstructions = getRecipeInstructions.executeQuery();
 
@@ -82,7 +82,7 @@ public class RecipeDAO extends MySQLDAO implements RecipeDAOInterface {
 		recipe.setAccessesWithinLast7Days( recipeAccesses.getInt("accesses") );
 
 		while( recipeInstructions.next() ){
-			recipe.addInstruction( recipeInstructions.getInt("instruction_step"), recipeInstructions.getString("instruction_description") );
+			recipe.addInstruction( recipeInstructions.getInt("step"), recipeInstructions.getString("description") );
 		}
 
 		while( recipeIngredients.next() ){
@@ -387,7 +387,7 @@ public class RecipeDAO extends MySQLDAO implements RecipeDAOInterface {
 
         // Save instructions
         try (PreparedStatement insertInstructionStatement = connection.prepareStatement(
-                "INSERT INTO recipe_instructions (recipe_id, instruction_step, instruction_description) VALUES (?, ?, ?)")) {
+                "INSERT INTO recipe_instructions (recipe_id, step, description) VALUES (?, ?, ?)")) {
             for (int step : recipe.getInstructions().keySet()) {
                 String description = recipe.getInstructions().get(step);
                 insertInstructionStatement.setString(1, recipe.getID());

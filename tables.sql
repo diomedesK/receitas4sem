@@ -50,10 +50,11 @@ CREATE TABLE IF NOT EXISTS recipe_accesses (
 
 CREATE TABLE IF NOT EXISTS recipe_instructions (
 	recipe_id INT NOT NULL,
-	instruction_step INT NOT NULL,
-	instruction_description VARCHAR(500) NOT NULL,
 
-	PRIMARY KEY ( recipe_id, INSTRUCTION_STEP ),
+	step INT NOT NULL,
+	description VARCHAR(500) NOT NULL,
+
+	PRIMARY KEY ( recipe_id, step ),
 
 	FOREIGN KEY ( recipe_id ) REFERENCES recipes(id) ON DELETE CASCADE
 

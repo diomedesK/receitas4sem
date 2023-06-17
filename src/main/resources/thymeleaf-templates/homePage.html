@@ -14,7 +14,8 @@
 			<div class="row centered">
 
 				<div th:include="fragments :: recipe-container" th:with="recipes=${randomRecipes}, title='Receitas para você'"></div>
-				<div th:include="fragments :: recipe-container" th:with="recipes=${popularRecipes}, title='Receitas populares na última semana'"></div>
+
+				<div class="mt" th:include="fragments :: recipe-container" th:with="recipes=${popularRecipes}, title='Receitas populares na última semana'"></div>
 
 			</div>
 
