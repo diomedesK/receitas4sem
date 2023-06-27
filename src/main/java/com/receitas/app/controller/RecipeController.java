@@ -29,31 +29,41 @@ public class RecipeController {
 		this.userService = userService;
     }
 
+	public void addContextRecipeAttributeByPathParam( Context context ){
+		String targetRecipeID = context.pathParam("id");
+		Optional<RecipeModel> targetRecipe = recipeService.getRecipeByID(targetRecipeID);
+
+		if( targetRecipe.isPresent() ){
+			context.attribute("recipe", targetRecipe.get());
+		} 
+	}
+
 	public void getRecipePage(Context context) {
-		String recipeID = context.pathParam("id");
-		RecipeModel recipe = recipeService.getRecipeByID( recipeID ).get();
+		MyLogger.info("get recipe page");
+		RecipeModel recipe = context.attribute("recipe");
 
 		if (recipe != null) {
-			recipeService.clearAccessesOfRecipeFromDaysAgo(recipeID, 7);
+			recipeService.clearAccessesOfRecipeFromDaysAgo(recipe.getID(), 7);
 			recipeService.addAccess(context.pathParam("id"));
 			
-			context.attribute("recipe", recipe);
 			if (context.attribute("userData") != null){
 				UserModel user = context.attribute("userData");
-				boolean wasRecipeFavorited = userService.hasUserFavoritedRecipeFromSessionToken( context.cookie("session-token"), recipeID );
+
+				boolean wasRecipeFavorited = userService.hasUserFavoritedRecipeFromSessionToken( context.cookie("session-token"), recipe.getID() );
 				context.attribute("wasRecipeFavorited", wasRecipeFavorited);
 
-				Optional<Integer> userRating = recipeService.getRating(recipeID, user.getID() );
+				Optional<Integer> userRating = recipeService.getRating(recipe.getID(), user.getID() );
 				if(userRating.isPresent()){
 					context.attribute("userRating", userRating.get());
 				}
 
+				context.attribute("isAccessedByAuthor", recipe.getAuthorID().equals(user.getID()));
 			}
 
 			context.render("recipePage.html");
 
 		} else {
-			context.status(404);
+			context.redirect("/");
 		}
 
 	};
@@ -165,11 +175,12 @@ public class RecipeController {
 
 	public void addRecipeRating(Context context){
 		UserModel user = context.attribute("userData");
-		String recipeID = context.pathParam("id");
+		RecipeModel recipe = context.attribute("recipe");
+
 		try {
 			int rating = Integer.parseInt(context.queryParam("nota"));
 			if( user != null  ){
-				boolean success = recipeService.addRating(recipeID, user.getID(), rating);
+				boolean success = recipeService.addRating(recipe.getID(), user.getID(), rating);
 				if(success == true){
 					context.status(200);
 					return;
@@ -183,11 +194,16 @@ public class RecipeController {
 	}
 
     public void deleteRecipe(Context context) {
-        String recipeID = context.pathParam("id");
-		System.out.println(recipeID);
-        ServiceAPIResponse res = recipeService.deleteRecipeByID(recipeID);
+		RecipeModel recipe = context.attribute("recipe");
 
-        context.status(res.status).json(res.message);
+		if( recipe != null && context.attribute("userData") != null ){
+			UserModel user = context.attribute("userData");
+			ServiceAPIResponse res = recipeService.deleteRecipeByModel(recipe, user.getID());
+			context.status(res.status).json(res.message);
+		} else {
+			context.status(404);
+		}
+
     }
 
 

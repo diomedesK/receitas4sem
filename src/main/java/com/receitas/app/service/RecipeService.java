@@ -65,24 +65,9 @@ public class RecipeService {
         return recipeDAO.getRecipesByCategories(categories);
     }
 
-    public ServiceAPIResponse addRecipeFromJSON(String recipeJSON) {
-		try {
-			RecipeModel deserializedRecipe = mapper.readValue(recipeJSON, RecipeModel.class);
-			return addRecipe( deserializedRecipe );
-
-		} catch( UnrecognizedPropertyException e){
-			return invalidJSONResponse;
-		} catch ( JsonMappingException jme ){
-			return invalidJSONResponse;
-		} catch ( JsonProcessingException  jpe){
-			return invalidJSONResponse;
-		}  
-	}
-
     public ServiceAPIResponse addRecipeFromJSON(String recipeJSON, String authorID) {
 		try {
 			RecipeModel deserializedRecipe = mapper.readValue(recipeJSON, RecipeModel.class);
-
 			deserializedRecipe.setAuthorID(authorID);
 
 			return addRecipe( deserializedRecipe );
@@ -120,15 +105,41 @@ public class RecipeService {
 
 	}
 
-    public ServiceAPIResponse deleteRecipeByID(String recipeID) {
+    public ServiceAPIResponse deleteRecipeByID(String recipeID, String requesterID) {
 
-        boolean res = recipeDAO.deleteRecipeByID(recipeID);
+		Optional<RecipeModel> recipe = recipeDAO.getRecipeByID(recipeID);
 
-		if ( res == true ){
-			return new ServiceAPIResponse("Recipe deleted succesfuly", 200);
+		if ( recipe.isPresent() ) { 
+			if ( requesterID.equals(recipe.get().getAuthorID()) ){
+
+				boolean res = recipeDAO.deleteRecipeByID(recipeID);
+				if ( res == true ){
+					return new ServiceAPIResponse("Recipe deleted succesfuly", 202);
+				}
+
+			} else {
+				return new ServiceAPIResponse("Not your recipe", 403);
+			}
+		} 
+
+		return new ServiceAPIResponse("Non-existing recipe", 404);
+    }
+
+    public ServiceAPIResponse deleteRecipeByModel(RecipeModel recipe, String requesterID) {
+
+		if ( requesterID.equals(recipe.getAuthorID()) ){
+
+			boolean res = recipeDAO.deleteRecipeByID(recipe.getID());
+			if ( res == true ){
+				return new ServiceAPIResponse("Recipe deleted succesfuly", 202);
+			}
+
 		} else {
-			return new ServiceAPIResponse("Non-existing recipe", 404);
+			return new ServiceAPIResponse("Not your recipe", 403);
 		}
+
+
+		return new ServiceAPIResponse("Non-existing recipe", 404);
 
     }
 

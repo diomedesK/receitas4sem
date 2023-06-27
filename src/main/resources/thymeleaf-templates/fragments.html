@@ -8,6 +8,7 @@
   <head th:fragment="necessary-styles-and-scripts">
 	  <title>Receitas 4ADS</title>
 	  <meta charset="UTF-8" />
+	  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 	  <link th:href="@{/assets/css/bootstrap.css}" rel="stylesheet">
 	  <link th:href="@{/assets/css/main.css}" rel="stylesheet">
@@ -16,6 +17,7 @@
   </head>
 
   <div th:fragment="recipe-container">
+
 	  <div class="col-lg-6 col-lg-offset-3 centered mt-0">
 		  <h3 th:if="${title}" th:text="${title}"></h3>
 		  <hr>
@@ -23,16 +25,16 @@
 
 	  <div class="recipe-container">
 		  <div class="recipe-card" th:each="recipe : ${recipes}">
-			  <a th:href="'/receitas/' + ${recipe.id}">
-				  <h3 th:text="${recipe.name}"></h3>
-			  </a>
-			  <p class="no-margin" th:text="${recipe.description}"></p>
-			  <p class="no-margin" th:text="${recipe.prepareInMinutes} + ' minutos 🕛'"></p>
-			  <p class="no-margin" th:text="${recipe.accessesWithinLast7Days} + ' acesso(s) recentes 👁️'"></p>
-			  <p class="no-margin">
-			  <span>⭐ Avaliação média: </span>
-			  <span th:text="${recipe.averageRating}"></span>
-			  </p>
+			  <img style="height: auto; width: auto; max-width: 100%" th:src="${recipe.imagePath}? ${recipe.imagePath} : '/pictures/no-picture.jpg'"/>
+			  <span class="recipe-body">
+				  <a th:href="'/receitas/' + ${recipe.id}">
+					  <h3 th:text="${recipe.name}"></h3>
+				  </a>
+				  <p class="no-margin" th:text="${recipe.accessesWithinLast7Days} + ' acesso(s) recentes '"></p>
+				  <p class="no-margin">
+				  <span>⭐ <span th:text="${recipe.averageRating}"></span> </span>
+				  </p>
+			  </span>
 		  </div>
 	  </div>
   </div>

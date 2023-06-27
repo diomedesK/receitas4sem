@@ -81,7 +81,7 @@ public class UserService{
 			Optional<String> generatedUserID = userDAO.registerNewUser( deserializedUser );
 
 			if( generatedUserID.isPresent() ){
-				MyLogger.info("Generated user ID: " +generatedUserID.get());
+				MyLogger.info("Generated user ID: " + generatedUserID.get());
 				return new ServiceAPIResponse( generatedUserID.get(), 201 );
 
 			} else {
@@ -175,6 +175,14 @@ public class UserService{
 
 	public boolean hasUserFavoritedRecipeFromSessionToken( String sessionToken, String recipeID ){
 		return userDAO.hasUserFavoritedRecipeFromSessionToken(sessionToken, recipeID);
+	}
+
+	public Optional<String> getUserIDByUsername( String username ){
+		return userDAO.getUserIDByUsername(username);
+	}
+
+	public Optional<String> getUserIDByEmail( String email ){
+		return userDAO.getUserIDByEmail(email);
 	}
 
 	public Optional<UserModel> getUserDataFromSessionToken( String sessionToken ){

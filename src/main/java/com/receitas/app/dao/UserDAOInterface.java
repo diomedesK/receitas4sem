@@ -17,4 +17,7 @@ public interface UserDAOInterface {
 
 	public Optional<UserModel> authenticateUserByUsername ( String username, String hashedPassword );
 	public Optional<UserModel> authenticateUserByEmail ( String email, String hashedPassword );
+
+	public Optional<String> getUserIDByEmail ( String email );
+	public Optional<String> getUserIDByUsername ( String username );
 }

@@ -25,6 +25,8 @@ public class RecipeModel{
 	private String authorID;
 	private String cookingMethod;
 
+	private String imagePath;
+
 	private String additionalInfo;
 
 	private int prepareInMinutes;
@@ -48,9 +50,9 @@ public class RecipeModel{
 
 	@JsonCreator
 	public RecipeModel( 
-			@JsonProperty("authorID") String authorID,
 			@JsonProperty("name") String name,
 			@JsonProperty("description") String description,
+			@JsonProperty("imagePath") String imagePath,
 			@JsonProperty("prepareInMinutes") String prepareInMinutes,
 			@JsonProperty("cookingMethod") String cookingMethod,
 			@JsonProperty("categories") LinkedHashSet<String> categories,
@@ -67,8 +69,8 @@ public class RecipeModel{
 		this();
 		try {
 			this.name = name;
-			this.setAuthorID(authorID);
 
+			this.setImagePath(imagePath);
 			this.setDescription(description);
 			this.prepareInMinutes = Integer.parseInt( prepareInMinutes );
 			this.cookingMethod = cookingMethod;
@@ -91,6 +93,15 @@ public class RecipeModel{
 
 	public String getID(){
 		return this.ID;
+	}
+
+	public boolean setImagePath(String imagePath){
+		this.imagePath = imagePath;
+		return true;
+	}
+	
+	public String getImagePath(){
+		return this.imagePath;
 	}
 
 	public boolean setAuthorID(String id){

@@ -49,6 +49,7 @@ public class RecipeDAO extends MySQLDAO implements RecipeDAOInterface {
 		recipe.setDescription(resultSet.getString("description"));
 		recipe.setPrepareInMinutes(resultSet.getInt("prepare_in_minutes"));
 		recipe.setCookingMethod(resultSet.getString("cooking_method"));
+		recipe.setImagePath(resultSet.getString("image_path"));
 
 		recipe.setAdditionalInfo( resultSet.getString("additional_info") );
 
@@ -284,22 +285,17 @@ public class RecipeDAO extends MySQLDAO implements RecipeDAOInterface {
     public boolean deleteRecipeByID(String id) {
 		MyLogger.info("Deleting recipe of ID " + id);
 
-		String[] neededStatements = {
-			"DELETE FROM recipes WHERE id = ?"
-		};
+        try(  PreparedStatement statement = connection.prepareStatement("DELETE FROM recipes WHERE id = ?")  ){
+			statement.setString(1, id);
+			int rowsAffected = statement.executeUpdate();
 
-        try{
-			for ( String s : neededStatements ){
-				PreparedStatement statement = connection.prepareStatement(s);
-				statement.setString(1, id);
-				statement.executeUpdate();
-			}
+			return rowsAffected > 0;
+
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
         }
 
-        return true;
+		return false;
     }
 
 

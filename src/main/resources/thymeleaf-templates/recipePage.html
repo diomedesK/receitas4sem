@@ -7,6 +7,89 @@
 
 	<th:block th:include="./fragments.html :: necessary-styles-and-scripts" > </th:block>
 
+<style>
+.btn-favorite-true {
+	background-color: #eb5353;
+	padding: 5px;
+	border-radius: 5px;
+	color: white;
+	border: none;
+}
+
+.btn-favorite-false {
+	background-color: #006ec0;
+	padding: 5px;
+	border-radius: 5px;
+	color: white;
+	border: none;
+}
+
+.recipe-details{
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	gap: 5px;
+	<!-- background-color: #e7e7e7; -->
+	padding: 10px;
+	color: black;
+	border-radius: 60px;
+	width: fit-content;
+}
+
+.center{
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.center.detail{
+	gap: 5px;
+}
+
+.star {
+  font-size: 24px;
+  cursor: pointer;
+  color: gray;
+}
+
+.star:hover,
+.star.active {
+  color: gold;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0px 2px 6px 1px #ababab;
+  padding: 12px 16px;
+  z-index: 1;
+
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px;
+}
+
+.dropdown:hover .dropdown-content {
+  display: flex;
+}
+
+.three-dots{
+	padding: 2px 5px;
+	background-color: #eeeeee;
+	cursor: pointer;
+	user-select: none;
+}
+
+
+</style>
+
 </head>
 
   <body>
@@ -15,90 +98,132 @@
 
 	<div id="white">
 
-	    <div class="container">
-			<div class="row">
-				<div class="col-lg-8 col-lg-offset-2" style="display: flex; flex-direction: column">
+		<div class="container">
+			<div class="row" style="display: flex; align-items: center; justify-content: center" >
+				<div class="container col-8 col-sm-8 col-md-8 col-lg-8 col-xl-6 col-xxl-6" style="display: flex; flex-direction: column; box-shadow: 1px 4px 1px 3px #eaeaea7a">
 
-					<h3 style="text-align: center" th:text="${recipe.name}"></h3>
+					<div style="align-self: flex-start" th:if="${isAccessedByAuthor}"> 
+						<div class="dropdown">
 
-					<div class="center">
+							<span class="three-dots">...</span>
 
-						<div class="center" style="display: flex; gap: 10px; flex-direction: row; font-size: 12px">
+							<div class="dropdown-content">
+								<!-- <button id="editButton" class="btn btn-secondary "type="button" > Editar </button> -->
+								<button id="deleteButton" class="btn btn-danger "type="button" > Deletar </button>
+								<script> 
+									const deleteButton = document.getElementById("deleteButton");
 
-							<div class="recipe-details">
-								<p  class="no-margin">  <span> 🕛 </span> <span th:text="${recipe.prepareInMinutes}"></span> minutos </p>
-								<p  class="no-margin"> <span> 🍳 Modo de preparo: </span><span th:text="${recipe.cookingMethod}"></span> </p>
-								<p  class="no-margin"> <span> ⭐ Avaliação média: </span> <span th:text="${recipe.averageRating}"></span> </p>
+									deleteButton.addEventListener("click", () => {
+										const currentHref = window.location.href;
+										fetch(currentHref, {
+											method: "DELETE"
+										})
+											.then(response => {
+												if (response.ok) {
+													console.log("Delete request was successful");
+													window.location=document.referrer;
+												} else {
+													console.error("Delete request failed");
+												}
+											})
+											.catch(error => {
+												console.error("An error occurred during the delete request", error);
+											});
+									});
+								</script>
+
 							</div>
 						</div>
 
 					</div>
 
-					<div th:if="${userData}" style="align-self: end; display: flex; gap: 1em">
 
-					<div id="rating-container">
-						<span class="star" data-value="1">&#9733;</span>
-						<span class="star" data-value="2">&#9733;</span>
-						<span class="star" data-value="3">&#9733;</span>
-						<span class="star" data-value="4">&#9733;</span>
-						<span class="star" data-value="5">&#9733;</span>
+				<h3 style="text-align: center" th:text="${recipe.name}"></h3>
+
+				<div th:if="${recipe.imagePath}" style="display: flex; justify-content: center; margin: 10px 0px 10px 0px ">
+					<img style="width: auto; height: auto; max-width: 80%" src="https://f4.bcbits.com/img/a1656987917_16.jpg" />
+				</div>
+
+				<div class="center">
+
+					<div class="center" style="display: flex; gap: 10px; flex-direction: row; font-size: 12px">
+
+						<div class="recipe-details center" >
+							<p  class="center detail no-margin">  <span> 🕛 </span> <span th:text="${recipe.prepareInMinutes}"></span> minutos </p>
+							<p  class="center detail no-margin"> <span> 🍳 Modo de preparo: </span><span th:text="${recipe.cookingMethod}"></span> </p>
+							<p  class="center detail no-margin"> <span> ⭐ Avaliação média: </span> <span th:text="${recipe.averageRating}"></span> </p>
+							<div th:if="${userData}" style="align-self: end; display: flex; gap: 1em">
+
+								<div id="rating-container">
+									<span class="star" data-value="1">&#9733;</span>
+									<span class="star" data-value="2">&#9733;</span>
+									<span class="star" data-value="3">&#9733;</span>
+									<span class="star" data-value="4">&#9733;</span>
+									<span class="star" data-value="5">&#9733;</span>
+								</div>
+
+								<script>
+									const ratingContainer = document.getElementById("rating-container");
+									const stars = ratingContainer.getElementsByClassName("star");
+
+									for (let i = 0; i < stars.length; i++) {
+										stars[i].addEventListener("click", function () {
+
+											const value = parseInt(this.getAttribute("data-value"));
+
+											for (let j = 0; j < stars.length; j++) {
+												if (j < value) {
+													stars[j].classList.add("active");
+												} else {
+													stars[j].classList.remove("active");
+												}
+											}
+
+											const recipeID = [[${recipe.id}]];
+											const rating = value;
+
+											const url = `/receitas/${recipeID}/avaliacoes?nota=${rating}`;
+											fetch(url, {
+												method: "PUT"
+											}).then(response => {
+												if (response.ok) {
+													console.log("Rating submitted successfully!");
+												} else {
+													console.log("Rating submission failed!");
+												}
+											})
+												.catch(error => {
+													console.error("An error occurred while submitting the rating:", error);
+												});
+
+										});
+
+									}
+
+								</script>
+
+							</div>
+
+						</div>
+
 					</div>
 
-					<script>
-						const ratingContainer = document.getElementById("rating-container");
-						const stars = ratingContainer.getElementsByClassName("star");
+				</div>
 
-						for (let i = 0; i < stars.length; i++) {
-							stars[i].addEventListener("click", function () {
-
-								const value = parseInt(this.getAttribute("data-value"));
-
-								for (let j = 0; j < stars.length; j++) {
-									if (j < value) {
-										stars[j].classList.add("active");
-									} else {
-										stars[j].classList.remove("active");
-									}
-								}
-
-								const recipeID = [[${recipe.id}]];
-								const rating = value;
-
-								const url = `/receitas/${recipeID}/avaliacoes?nota=${rating}`;
-								fetch(url, {
-									method: "PUT"
-								}).then(response => {
-										if (response.ok) {
-											console.log("Rating submitted successfully!");
-										} else {
-											console.log("Rating submission failed!");
-										}
-									})
-									.catch(error => {
-										console.error("An error occurred while submitting the rating:", error);
-									});
-
-							});
-
-						}
-
-					</script>
-
-
+				<div th:if="${userData}" style="align-self: flex-end">
 					<button id="favoriteButton" type="button" style="padding: 10px;" 
-						th:class=" ${wasRecipeFavorited} ? 'btn-favorite-true' : 'btn-favorite-false'">
-						<span th:text="${wasRecipeFavorited} ? 'Remover favorito' : 'Favoritar'"></span>
+															  th:class=" ${wasRecipeFavorited} ? 'btn-favorite-true' : 'btn-favorite-false'">
+						<span th:text="${wasRecipeFavorited} ? 'Desfavoritar' : 'Favoritar'"></span>
 					</button>
 
 					<script>
-
 						function favoriteUnfavorite() {
 							var recipeId = [[${recipe.id}]]
 
 							isFavorited = !isFavorited;
-							
+
 							var button = document.getElementById('favoriteButton');
-							
+
 							if (isFavorited) {
 								button.classList.add('btn-favorite-true');
 								button.classList.remove('btn-favorite-false');
@@ -126,47 +251,46 @@
 						document.getElementById("favoriteButton").addEventListener("click", (e) => favoriteUnfavorite())
 						var isFavorited = [[${wasRecipeFavorited}]]; 
 					</script>
+				</div>
 
-					</div>
+				<br>
 
-					<br>
+				<p  th:text="${recipe.description}"></p>
 
-					<p  th:text="${recipe.description}"></p>
-					
-					<h3>Ingredientes:</h3>
-					<ul>
-						<li th:each="ingredient : ${recipe.ingredients}" th:text="${ingredient.name}"></li>
-					</ul>
+				<h3>Ingredientes:</h3>
+				<ul>
+					<li th:each="ingredient : ${recipe.ingredients}" th:text="${ingredient.name}"></li>
+				</ul>
 
-					<h3>Instruções:</h3>
-					<ol>
-						<li th:each="instruction : ${recipe.instructions}" th:text="${instruction.value}"></li>
-					</ol>
+				<h3>Instruções:</h3>
+				<ol>
+					<li th:each="instruction : ${recipe.instructions}" th:text="${instruction.value}"></li>
+				</ol>
 
-					<div th:if="${recipe.additionalInfo != null}" >
+				<div th:if="${recipe.additionalInfo != null}" >
 
-						<h3> Informações adicionais: </h3>
-						<p th:text="${recipe.additionalInfo}"></p>
+					<h3> Informações adicionais: </h3>
+					<p th:text="${recipe.additionalInfo}"></p>
 
-						<hr>
+					<hr>
 
-					</div>
+				</div>
 
-					<ol>
-						<li th:each="category : ${categories}" th:href="${category}"></li>
-					</ol>
+				<ol>
+					<li th:each="category : ${categories}" th:href="${category}"></li>
+				</ol>
 
-					<p th:each="category : ${recipe.categories}">
-					<bt> TAGS: 
-						<span th:text="${category}"> </span>
-					</bt>
-					</p>
+				<p th:each="category : ${recipe.categories}">
+				<bt> TAGS: 
+				<span th:text="${category}"> </span>
+				</bt>
+				</p>
 
 
 				</div>
 
 			</div><!-- /row -->
-	    </div> <!-- /container -->
+		</div> <!-- /container -->
 	</div><!-- /white -->
 	
 	
@@ -197,50 +321,4 @@
 
 </script>
 
-<style>
 
-.btn-favorite-true {
-	background-color: #eb5353;
-	padding: 5px;
-	border-radius: 5px;
-	color: white;
-	border: none;
-}
-
-.btn-favorite-false {
-	background-color: #006ec0;
-	padding: 5px;
-	border-radius: 5px;
-	color: white;
-	border: none;
-}
-
-.recipe-details{
-	display: flex;
-	flex-direction: row;
-	gap: 5px;
-	<!-- background-color: #e7e7e7; -->
-	padding: 10px;
-	color: black;
-	border-radius: 60px;
-	width: fit-content;
-}
-
-.center{
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.star {
-  font-size: 24px;
-  cursor: pointer;
-  color: gray;
-}
-
-.star:hover,
-.star.active {
-  color: gold;
-}
-
-</style>

@@ -4,19 +4,25 @@ import java.util.Optional;
 import java.time.Duration;
 
 import io.javalin.http.Context;
+import java.util.List;
 
 import com.receitas.app.service.UserService;
 import com.receitas.app.service.SessionData;
 import com.receitas.app.service.ServiceAPIResponse;
 
+import com.receitas.app.service.RecipeService;
+
 import com.receitas.app.model.UserModel;
+import com.receitas.app.model.RecipeModel;
 
 public class UserController {
 
     private final UserService userService;
+    private final RecipeService recipeService;
 
-    public UserController(UserService userService) {
-        this.userService = userService;;
+    public UserController(UserService userService, RecipeService recipeService) {
+        this.userService = userService;
+		this.recipeService = recipeService;
     }
 
 	public void signUpUser( Context context ){
@@ -61,6 +67,13 @@ public class UserController {
 		context.redirect("/");
 	}
 
+	public void getProfilePage( Context context ){
+		if (context.attribute("userData") != null){
+			context.render("userProfilePage.html");
+		} else {
+			context.redirect("/");
+		}
+	}
 
 	public void getFavoritesPage( Context context ){
 		if (context.attribute("userData") != null){
@@ -68,7 +81,18 @@ public class UserController {
 		} else {
 			context.redirect("/");
 		}
+	}
 
+	public void getUserRecipesPage( Context context ){
+		if (context.attribute("userData") != null){
+			UserModel user = context.attribute("userData");
+			List<RecipeModel> userRecipes = recipeService.getRecipesByAuthorID(user.getID());
+			System.out.println(userRecipes);
+			context.attribute("userRecipes", userRecipes );
+			context.render("userRecipesPage.html");
+		} else {
+			context.redirect("/");
+		}
 	}
 
 	public void saveFavoriteRecipe( Context context ){

@@ -1,0 +1,51 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" > 
+<th:block th:include="./fragments.html :: necessary-styles-and-scripts" > </th:block>
+
+<body>
+
+	<th:block th:include="./navbar.html" > </th:block>
+
+	<div id="white">
+		<div class="container">
+			<div class="row">
+				<div style="display: flex; flex-direction: row">
+
+					<div class="col-2 col-md-4 col-lg-4 col-xl-6 col-xxl-6" style="display: flex; flex-direction: column; padding: 15px; align-items: center; gap: 5px; ">
+						<img style="border-radius: 50%; width: auto; height: auto; max-width: 100%; max-height: 100%; box-shadow: 0px 2px 2px 2px teal; "
+							 src="/pictures/user-icon.jpg" />
+
+						<h4> <span th:text="${userData.name}"> </span> </h4>
+
+						<a th:href="@{'/perfil/favoritos/'}">Favoritos</a>
+						<a th:href="@{'/perfil/receitas/'}">Minhas receitas</a>
+					</div>
+
+					<div class="container" style="display: flex; flex-direction: column; padding: 15px; background-color: #fefefe">
+
+						<h4> Sobre você </h4>
+
+						<span>
+							Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+						</span>
+
+					</div>
+
+				</div>
+
+
+			</div><!-- /container -->
+		</div>
+	</div>
+
+
+	<th:block th:include="./footer.html" > </th:block>
+	<th:block th:include="./fragments.html :: bootstrap-js"> </th:block>
+
+</body>
+
+
+</html>
+
+
+

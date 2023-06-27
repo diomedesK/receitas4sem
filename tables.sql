@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS recipes (
 	prepare_in_minutes INT NOT NULL,
 	cooking_method VARCHAR(50) NOT NULL,
 	additional_info VARCHAR(1000),
+	image_path VARCHAR(300),
 
 	PRIMARY KEY (id),
 

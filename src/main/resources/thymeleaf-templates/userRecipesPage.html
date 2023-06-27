@@ -1,0 +1,33 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" > 
+
+<th:block th:include="./fragments.html :: necessary-styles-and-scripts" > </th:block>
+
+<body>
+
+	<th:block th:include="./navbar.html" > </th:block>
+
+	<div id="white">
+		<div class="container">
+
+			<div class="row centered">
+
+				<div th:include="fragments :: recipe-container" th:with="recipes=${userRecipes}, title='Receitas que você criou'"></div>
+
+			</div> <!-- /row-centered -->
+
+		</div><!-- /container -->
+
+	</div>
+
+
+	<th:block th:include="./footer.html" > </th:block>
+	<th:block th:include="./fragments.html :: bootstrap-js"> </th:block>
+
+</body>
+
+
+</html>
+
+
+

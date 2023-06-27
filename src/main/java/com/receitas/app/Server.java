@@ -26,6 +26,7 @@ import com.receitas.app.controller.UserController;
 import com.receitas.app.controller.RecipeController;
 
 import com.receitas.app.model.UserModel;
+import com.receitas.app.model.RecipeModel;
 
 
 public class Server {
@@ -35,11 +36,12 @@ public class Server {
 			);
 
 	private static final UserService userService = UserService.getInstance();
+	private static final RecipeService recipeService = RecipeService.getInstance();
 
 	public static void main(String[] args) {
 
-		UserController userController = new UserController(UserService.getInstance());
-		RecipeController recipeController = new RecipeController(RecipeService.getInstance(), UserService.getInstance());
+		RecipeController recipeController = new RecipeController(recipeService, userService);
+		UserController userController = new UserController(userService, recipeService);
 
 		Javalin app = Javalin.create(config -> {
 			config.addStaticFiles("/static");
@@ -56,6 +58,11 @@ public class Server {
 		}).start( getPort() );
 
 		app.before(ctx -> {
+			String path = ctx.path();
+			if (path.endsWith(".js") || path.endsWith(".css")) {
+				return; // Skip processing for static files
+			}
+
 			String sessionToken = ctx.cookie("session-token");
 			if( sessionToken != null ){
 				Optional<UserModel> userData = userService.getUserDataFromSessionToken(sessionToken);
@@ -64,8 +71,10 @@ public class Server {
 					ctx.attribute("userData", userData.get());
 				}
 			}
-
 		});
+
+		app.before("/receitas/:id", recipeController::addContextRecipeAttributeByPathParam );
+		app.before("/receitas/:id/*", recipeController::addContextRecipeAttributeByPathParam );
 
 		app.routes(() -> {
 			get("/", (ctx) -> ctx.redirect("/home"));
@@ -79,15 +88,15 @@ public class Server {
 
 			put("/receitas", recipeController::addRecipeJSON);
 			get("/receitas/:id", recipeController::getRecipePage); // also handles query params
-			delete("/receitas/:id", recipeController::deleteRecipe);
-
 			put("/receitas/:id/avaliacoes", recipeController::addRecipeRating);
+			delete("/receitas/:id", recipeController::deleteRecipe);
 
 			get("/api/receitas", recipeController::getRecipes); // also handles to query params
 			get("/api/receitas/popular", recipeController::getPopularRecipes); // also handles to query params
 
-			get("/perfil/:id", ( ctx ) -> ctx.redirect("/home"));  // not yet
-			get("/perfil/:id/favoritos", userController::getFavoritesPage); 
+			get("/perfil/", userController::getProfilePage);  // not yet
+			get("/perfil/favoritos", userController::getFavoritesPage); 
+			get("/perfil/receitas", userController::getUserRecipesPage); 
 
 			get("/api/perfil/", userController::getUserDataFromSessionToken); 
 

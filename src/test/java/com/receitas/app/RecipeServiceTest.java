@@ -8,59 +8,55 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Optional;
 
-import com.receitas.app.service.RecipeService;
-
-import com.receitas.app.model.UserModel;
 import com.receitas.app.model.RecipeModel;
 
-import com.receitas.app.dao.RecipeDAO;
-import com.receitas.app.dao.UserDAO;
+import com.receitas.app.service.RecipeService;
+import com.receitas.app.service.UserService;
 
 import com.receitas.app.service.ServiceAPIResponse;
 
 public class RecipeServiceTest {
 
-    public static RecipeService recipeService = RecipeService.getInstance();
+    private static RecipeService recipeService = RecipeService.getInstance();
+    private static UserService userService = UserService.getInstance();
 
-	public static String addedRecipeFromJSONID;
-	public static String sampleUserID;
+	public static String generatedRecipeID;
+	public static String generatedUserID;
 
-	public static String getRecipeJSON( String authorID ){
-		return String.format( "{ \"name\": \"My Cake\", \"authorID\": \"%s\", \"description\": \"Delicious chocolate cake recipe\", \"prepareInMinutes\": 60, \"cookingMethod\": \"Baking\", \"categories\": [ \"Cakes\", \"Sweet\" ], \"instructions\": { \"0\": \"Prehea at the oven to 350°F\", \"1\": \"Mix the dry ingredients in a bowl\", \"2\": \"Combine the wet ingredients in another bowl\" }, \"accessesWithinLast7Days\": 0, \"ratings\": { \"1\": 5, \"2\": 4 }, \"ingredients\": [ { \"name\": \"wheat\" }, { \"name\": \"milk\" } ] }", authorID  );
-	}
+	@BeforeAll
+	@Test
+	public static void createSampleRecipeAndGetSampleUser() {
 
-    public static String getARecipeIDForTesting( String authorID ) {
-		String recipeID = recipeService.addRecipeFromJSON( getRecipeJSON(authorID) ).message;
-		return recipeID;
-    }
+		Optional<String> userIDByEmail = userService.getUserIDByEmail("john@mail.com");
 
-    public static void deleteRecipeByIDForTesting( String id ) {
-		recipeService.deleteRecipeByID(id);
-    }
+		if ( userIDByEmail.isPresent() ){
+			generatedUserID = userIDByEmail.get();
+		} else {
+			ServiceAPIResponse addUserResponse = userService.registerNewUserFromJSON(TestDataSamples.userJSON);
+			Assertions.assertEquals(201, addUserResponse.status);
+			generatedUserID = addUserResponse.message;
+		}
 
-    @BeforeAll
-	public static void setUp() {
-		sampleUserID = UserServiceTest.getAUserIDForTesting();
+
+		ServiceAPIResponse addRecipeResponse = recipeService.addRecipeFromJSON( TestDataSamples.recipeJSON, generatedUserID);
+		Assertions.assertEquals(201, addRecipeResponse.status );
+		generatedRecipeID = addRecipeResponse.message;
 	}
 
 	@AfterAll
-	public static void clearAddedJSONRecipe(){
-		recipeService.deleteRecipeByID(addedRecipeFromJSONID);
-		UserServiceTest.deleteUserByIDForTesting(sampleUserID);
+	@Test
+	public static void destroy(){
+		ServiceAPIResponse deleteRecipeResponse = recipeService.deleteRecipeByID(generatedRecipeID, generatedUserID);
+
+		System.out.println(deleteRecipeResponse.message);
+        Assertions.assertEquals(202, deleteRecipeResponse.status);
+
+        userService.deleteUserByID(generatedUserID);
 	}
 
     @Test
-    public void testAddRecipeFromJSON() {
-		ServiceAPIResponse res = recipeService.addRecipeFromJSON( getRecipeJSON(sampleUserID) );
-        boolean added = res.status == 201;
-		Assertions.assertTrue(added);
-		
-		addedRecipeFromJSONID = res.message;
-    }
-
-    @Test
     public void testGetRecipeByID() {
-		String recipeID = addedRecipeFromJSONID;
+		String recipeID = generatedRecipeID;
 
         Optional<RecipeModel> recipe = recipeService.getRecipeByID(recipeID);
         Assertions.assertTrue(recipe.isPresent());
@@ -70,7 +66,7 @@ public class RecipeServiceTest {
 
     @Test
     public void testGetPopularRecipes() {
-        List<RecipeModel> popularRecipes = recipeService.getPopularRecipes();
+        List<RecipeModel> popularRecipes = recipeService.getPopularRecipes(8);
         Assertions.assertNotNull(popularRecipes);
     }
 
@@ -101,20 +97,16 @@ public class RecipeServiceTest {
         Assertions.assertNotNull(recipes);
     }
 
-
     @Test
     public void testAddRating() {
         int rating = 5;
 
         boolean added = recipeService.addRating(
-				addedRecipeFromJSONID,
-				sampleUserID,
+				generatedRecipeID,
+				generatedUserID,
 				rating
 				);
         Assertions.assertTrue(added);
-
     }
-
-
 
 }

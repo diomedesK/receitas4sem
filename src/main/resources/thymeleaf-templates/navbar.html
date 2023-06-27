@@ -25,13 +25,12 @@
 						<button id="search-btn" type="submit" class="btn btn-primary" style="border-radius: 5px; padding: 0px; padding-inline: 5px;" >
 							<span style="font-size: 20px;">🔍</span>
 						</button>
-
-
 					</li>
 
-					<li th:if="${userData}"><span style="color: white" th:text="'Olá, ' + ${userData.name}"> </span></li>
+					<!-- <li th:if="${userData}"><a style="color: white" th:text="'Olá, ' + ${userData.name}"> </a></li> -->
+					<li th:if="${userData}"><a th:href="@{'/perfil/'}">Meu perfil</a></li>
+					<li th:if="${userData}"><a th:href="@{'/perfil/favoritos'}">Favoritos</a></li>
 					<li th:if="${userData}"><a th:href="@{'/novareceita'}">Nova receita</a></li>
-					<li th:if="${userData}"><a th:href="@{'/perfil/' + ${userData.id} + '/favoritos/'}">Favoritos</a></li>
 					<li th:if="${userData}"><a th:href="@{/sair}">Sair</a></li>
 
 

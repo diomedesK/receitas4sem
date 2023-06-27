@@ -177,6 +177,42 @@ public class UserDAO extends MySQLDAO implements UserDAOInterface  {
 		}
 	}
 
+	@Override
+	public Optional<String> getUserIDByEmail( String email ){
+		try( PreparedStatement statement = connection.prepareStatement( "SELECT id FROM `users` WHERE email = ?") ){
+			statement.setString(1, email);
+			statement.executeQuery();
+
+			ResultSet resultSet = statement.executeQuery();
+			if (resultSet.next()){
+				return Optional.of( resultSet.getString("id") );
+			} 
+
+		} catch(SQLException e){
+			e.printStackTrace();
+		}
+
+		return Optional.empty();
+	}
+
+	@Override
+	public Optional<String> getUserIDByUsername( String username ){
+		try ( PreparedStatement statement = connection.prepareStatement( "SELECT id FROM `users` WHERE username = ?") ){
+			statement.setString(1, username);
+
+			statement.executeQuery();
+			ResultSet resultSet = statement.executeQuery();
+			if (resultSet.next()){
+				return Optional.of( resultSet.getString("id") );
+			} 
+
+		} catch(SQLException e){
+			e.printStackTrace();
+		}
+
+		return Optional.empty();
+	}
+
 	public boolean hasUserFavoritedRecipe( String userID, String recipeID ){
 		try( PreparedStatement statement = connection.prepareStatement("SELECT COUNT(1) as c FROM favorite_user_recipes WHERE user_id = ? and recipe_id = ?;") ){
 			statement.setString(1, userID);
